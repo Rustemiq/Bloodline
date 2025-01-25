@@ -2,51 +2,20 @@ import pygame
 import os
 
 from modules.camera import Camera
-from modules.tile import Tile
-from modules.player import Player
-from modules.weapon_item import WeaponItem
+from modules.level import level_list
 
 tiles_group = pygame.sprite.Group()
 walls_group = pygame.sprite.Group()
 weapons_group = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
 bullets_group = pygame.sprite.Group()
+enemies_group = pygame.sprite.Group()
 
 
 def add_sprite(sprite, *groups):
     for group in groups:
         group.add(sprite)
     return sprite
-
-
-def generate_level(name):
-    tile_size = 50
-    fullname = os.path.join('levels', name)
-    with open(fullname) as map_file:
-        level_map = [line.strip() for line in map_file]
-    player = None
-    for y in range(len(level_map)):
-        for x in range(len(level_map[0]) - 1):
-            cell = level_map[y][x]
-            if cell == '#':
-                add_sprite(Tile('wall', x, y),
-                           all_sprites, walls_group, tiles_group)
-            else:
-                add_sprite(Tile('empty', x, y), all_sprites, tiles_group)
-                if cell == '@':
-                    player = add_sprite(Player('empty', x, y), all_sprites)
-                    player.add_inter_groups(walls_group, weapons_group)
-                elif cell != '.':
-                    #для клеток с оружием
-                    if cell == 'S':
-                        weapon = WeaponItem('shotgun', x * tile_size, y * tile_size)
-                    if cell == 'U':
-                        weapon = WeaponItem('uzi', x * tile_size, y * tile_size)
-                    if cell == 'K':
-                        weapon = WeaponItem('knife', x * tile_size, y * tile_size)
-                    add_sprite(weapon, all_sprites, weapons_group)
-                    weapon.add_inter_groups(walls_group)
-    return player
 
 
 def weapon_interaction():
@@ -85,6 +54,20 @@ def draw_all(screen):
     bullets_group.draw(screen)
 
 
+class LevelIterator:
+    def __init__(self):
+        self.lvl_index = -1
+
+    def __next__(self):
+        self.lvl_index += 1
+        if self.lvl_index == len(level_list):
+            pass #окончание игры
+        level = level_list[self.lvl_index]
+        player = level.load_sprites(all_sprites, weapons_group,
+                                 walls_group, tiles_group, enemies_group)
+        return player
+
+
 WIDTH, HEIGHT = 900, 600
 if __name__ == '__main__':
     pygame.init()
@@ -95,8 +78,10 @@ if __name__ == '__main__':
     clock = pygame.time.Clock()
     fps = 60
     running = True
-    player = generate_level('lvl1.txt')
+    lvl_iterator = LevelIterator()
+    player = lvl_iterator.__next__()
     camera = Camera(all_sprites)
+
     while running:
         screen.fill('gray')
         for event in pygame.event.get():
