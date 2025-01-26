@@ -2,6 +2,7 @@ import pygame
 import math
 from modules.load_image import load_image
 from modules.weapon_converter import convert_to_hand, convert_to_item
+from modules.rotate_on_pivot import rotate_on_pivot
 
 HEIGHT = 600
 player_images = {
@@ -23,7 +24,7 @@ class Player(pygame.sprite.Sprite):
             self.sample_image = self.image = player_images[weapon.type]
         self.rect = pygame.Rect(tile_size * pos_x,
                                 tile_size * pos_y, 45, 45)
-        self.image_x, self.image_y = 0, 0
+        self.image_offset = 0, 0
         self.weapon = weapon
 
     def add_inter_groups(self, walls_group, weapons_group):
@@ -34,8 +35,10 @@ class Player(pygame.sprite.Sprite):
         hitbox_correction = 20
         #картинку необходимо сдвинуть относительно rect, дабы точка
         #вращения соответствовала голове персонажа
-        x = self.rect.x - self.image_x - self.rect.w // 2 + hitbox_correction
-        y = self.rect.y - self.image_y - self.rect.h // 2 + hitbox_correction
+        x = (self.rect.x + self.image_offset[0]
+             - self.rect.w // 2 + hitbox_correction)
+        y = (self.rect.y + self.image_offset[1]
+             - self.rect.h // 2 + hitbox_correction)
         screen.blit(self.image, (x, y))
         if self.weapon != 'empty' and self.weapon.type != 'knife':
             string = "Ammo: " + str(self.weapon.ammo)
@@ -44,30 +47,14 @@ class Player(pygame.sprite.Sprite):
             text_y = HEIGHT - text.get_height()
             screen.blit(text, (0, text_y))
 
-    def get_head_coord(self):
-        head_rel_x1 = self.sample_image.get_rect().w // 2 - player_center[0]
-        head_rel_y1 = self.sample_image.get_rect().h // 2 - player_center[1]
-        dist = math.sqrt(head_rel_x1 ** 2 + head_rel_y1 ** 2)
-        angle = (-90 - (180 / math.pi *
-                          -math.atan2(head_rel_y1, head_rel_x1))) % 360
-        angle += self.direction - 90
-        angle %= 360
-        real_center = self.image.get_rect().w // 2, self.image.get_rect().h // 2
-        head_y = -(round(math.cos(angle * math.pi / 180) * dist))
-        head_x = -(round(math.sin(-angle * math.pi / 180) * dist))
-        head_x += real_center[0]
-        head_y += real_center[1]
-        return head_x, head_y
-
     def turn_to_mouse(self, mouse_pos):
         x_rel = mouse_pos[0] - self.rect.centerx
         y_rel = mouse_pos[1] - self.rect.centery
         angle = (180 / math.pi * -math.atan2(y_rel, x_rel))
         self.direction = (90 - angle) % 360
         self.image = pygame.transform.rotate(self.sample_image, angle)
-        head_x, head_y = self.get_head_coord()
-        self.image_x = head_x - player_center[0]
-        self.image_y = head_y - player_center[1]
+        self.image_offset = rotate_on_pivot(player_center, self.direction,
+                                             self.image, self.sample_image)
 
     def get_move(self, keys):
         if keys[pygame.constants.K_w]:
