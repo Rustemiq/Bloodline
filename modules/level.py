@@ -20,8 +20,8 @@ class Level:
         self.map_name = map_name
         self.enemies = enemies
 
-    def load_sprites(self, all_sprites, weapons_group,
-                     walls_group, tiles_group, enemies_group):
+    def load_sprites(self, all_sprites, weapons_group, walls_group,
+                     tiles_group, enemies_group, dead_enemies_group):
         for sprite in all_sprites:
             sprite.kill()
         fullname = os.path.join('maps', self.map_name)
@@ -38,7 +38,8 @@ class Level:
                     add_sprite(Tile('empty', x, y), all_sprites, tiles_group)
                     if cell == '@':
                         player = add_sprite(Player('empty', x, y), all_sprites)
-                        player.add_inter_groups(walls_group, weapons_group)
+                        player.add_inter_groups(walls_group,
+                                                weapons_group,enemies_group)
                     elif cell != '.':
                         # для клеток с оружием
                         if cell == 'S':
@@ -51,9 +52,10 @@ class Level:
                             weapon = WeaponItem('knife', x * tile_size,
                                                 y * tile_size)
                         add_sprite(weapon, all_sprites, weapons_group)
-                        weapon.add_inter_groups(walls_group)
+                        weapon.add_inter_groups(walls_group, enemies_group)
         for enemy in self.enemies:
             add_sprite(enemy, all_sprites, enemies_group)
+            enemy.add_inter_groups(all_sprites, dead_enemies_group)
         return player
 
 

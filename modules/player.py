@@ -28,9 +28,10 @@ class Player(pygame.sprite.Sprite):
         self.weapon = weapon
         self.speed = 4
 
-    def add_inter_groups(self, walls_group, weapons_group):
+    def add_inter_groups(self, walls_group, weapons_group, enemies_group):
         self.walls_group = walls_group
         self.weapons_group = weapons_group
+        self.enemies_group = enemies_group
 
     def draw(self, screen, font):
         hitbox_correction = 3
@@ -95,3 +96,8 @@ class Player(pygame.sprite.Sprite):
         throwed_weapon = self.throw_weapon()
         self.grab_weapon()
         return throwed_weapon
+
+    def use_knife(self):
+        for enemy in self.enemies_group:
+            if pygame.sprite.collide_rect(self, enemy):
+                enemy.destroy('lethal')

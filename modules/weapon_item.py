@@ -25,12 +25,13 @@ class WeaponItem(pygame.sprite.Sprite):
         self.ammo = ammo
         self.thrown = False
 
-    def add_inter_groups(self, walls_group):
+    def add_inter_groups(self, walls_group, enemies_group):
         self.walls_group = walls_group
+        self.enemies_group = enemies_group
 
     def throw(self, direction):
         self.thrown = True
-        self.throw_speed = 15
+        self.throw_speed = 20
         self.throw_direction = direction
         self.image = pygame.transform.rotate(self.image, 90 - direction)
         self.rect.w = self.image.get_rect().w
@@ -44,6 +45,11 @@ class WeaponItem(pygame.sprite.Sprite):
             self.rect.y -= self.throw_speed * math.cos(
                 self.throw_direction * math.pi / 180)
             self.throw_speed -= 1
+            for enemy in self.enemies_group:
+                if pygame.sprite.collide_rect(self, enemy):
+                    self.throw_speed = 0
+                    enemy.destroy('not_lethal')
+                    break
             for wall in self.walls_group:
                 if pygame.sprite.collide_mask(self, wall):
                     self.throw_speed = 0

@@ -10,6 +10,7 @@ weapons_group = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
 bullets_group = pygame.sprite.Group()
 enemies_group = pygame.sprite.Group()
+dead_enemies_group = pygame.sprite.Group()
 
 
 def add_sprite(sprite, *groups):
@@ -22,7 +23,7 @@ def weapon_interaction():
     throwed_weapon = player.weapon_interaction()
     if throwed_weapon is not None:
         add_sprite(throwed_weapon, all_sprites, weapons_group)
-        throwed_weapon.add_inter_groups(walls_group)
+        throwed_weapon.add_inter_groups(walls_group, enemies_group)
 
 
 def shoot():
@@ -32,7 +33,12 @@ def shoot():
             if bullets is not None:
                 for bullet in bullets:
                     add_sprite(bullet, all_sprites, bullets_group)
-                    bullet.add_inter_groups(walls_group)
+                    bullet.add_inter_groups(walls_group, enemies_group)
+
+
+def use_knife():
+    if player.weapon != 'empty' and player.weapon.type == 'knife':
+        player.use_knife()
 
 
 def recharge():
@@ -50,6 +56,7 @@ def update_all():
 
 def draw_all(screen):
     tiles_group.draw(screen)
+    dead_enemies_group.draw(screen)
     weapons_group.draw(screen)
     for enemy in enemies_group:
         enemy.draw(screen)
@@ -66,8 +73,8 @@ class LevelIterator:
         if self.lvl_index == len(level_list):
             pass #окончание игры
         level = level_list[self.lvl_index]
-        player = level.load_sprites(all_sprites, weapons_group,
-                                 walls_group, tiles_group, enemies_group)
+        player = level.load_sprites(all_sprites, weapons_group, walls_group,
+                                tiles_group, enemies_group, dead_enemies_group)
         return player
 
 
@@ -96,6 +103,7 @@ if __name__ == '__main__':
                 if event.button == 3:
                     weapon_interaction()
         shoot()
+        use_knife()
         recharge()
         player.get_move(pygame.key.get_pressed())
         update_all()
