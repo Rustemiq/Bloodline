@@ -41,15 +41,18 @@ def recharge():
 
 
 def update_all():
-    camera.update(player)
-    camera.apply()
     weapons_group.update()
     bullets_group.update()
+    enemies_group.update()
+    camera.update(player)
+    camera.apply()
 
 
 def draw_all(screen):
     tiles_group.draw(screen)
     weapons_group.draw(screen)
+    for enemy in enemies_group:
+        enemy.draw(screen)
     player.draw(screen, font)
     bullets_group.draw(screen)
 

@@ -23,7 +23,9 @@ class WeaponInHand:
 
 
 class ShotgunInHand(WeaponInHand):
-    def __init__(self, ammo):
+    def __init__(self, ammo=None):
+        if ammo == None:
+            ammo = 6
         super().__init__(ammo, 'shotgun', 40)
 
     def shoot(self, direction):
@@ -41,7 +43,9 @@ class ShotgunInHand(WeaponInHand):
 
 
 class UziInHand(WeaponInHand):
-    def __init__(self, ammo):
+    def __init__(self, ammo=None):
+        if ammo == None:
+            ammo = 30
         super().__init__(ammo, 'uzi', 3)
 
     def shoot(self, direction):

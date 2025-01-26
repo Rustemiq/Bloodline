@@ -26,19 +26,18 @@ class Player(pygame.sprite.Sprite):
                                 tile_size * pos_y, 45, 45)
         self.image_offset = 0, 0
         self.weapon = weapon
+        self.speed = 4
 
     def add_inter_groups(self, walls_group, weapons_group):
         self.walls_group = walls_group
         self.weapons_group = weapons_group
 
     def draw(self, screen, font):
-        hitbox_correction = 20
+        hitbox_correction = 3
         #картинку необходимо сдвинуть относительно rect, дабы точка
         #вращения соответствовала голове персонажа
-        x = (self.rect.x + self.image_offset[0]
-             - self.rect.w // 2 + hitbox_correction)
-        y = (self.rect.y + self.image_offset[1]
-             - self.rect.h // 2 + hitbox_correction)
+        x = (self.rect.x + self.image_offset[0] - hitbox_correction)
+        y = (self.rect.y + self.image_offset[1] - hitbox_correction)
         screen.blit(self.image, (x, y))
         if self.weapon != 'empty' and self.weapon.type != 'knife':
             string = "Ammo: " + str(self.weapon.ammo)
@@ -58,21 +57,21 @@ class Player(pygame.sprite.Sprite):
 
     def get_move(self, keys):
         if keys[pygame.constants.K_w]:
-            self.rect.y -= 4
+            self.rect.y -= self.speed
             if pygame.sprite.spritecollideany(self, self.walls_group):
-                self.rect.y += 4
+                self.rect.y += self.speed
         if keys[pygame.constants.K_a]:
-            self.rect.x -= 4
+            self.rect.x -= self.speed
             if pygame.sprite.spritecollideany(self, self.walls_group):
-                self.rect.x += 4
+                self.rect.x += self.speed
         if keys[pygame.constants.K_s]:
-            self.rect.y += 4
+            self.rect.y += self.speed
             if pygame.sprite.spritecollideany(self, self.walls_group):
-                self.rect.y -= 4
+                self.rect.y -= self.speed
         if keys[pygame.constants.K_d]:
-            self.rect.x += 4
+            self.rect.x += self.speed
             if pygame.sprite.spritecollideany(self, self.walls_group):
-                self.rect.x -= 4
+                self.rect.x -= self.speed
 
     def throw_weapon(self):
         if self.weapon != 'empty':

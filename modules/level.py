@@ -1,7 +1,9 @@
 import os
 from modules.player import Player
+from modules.weapon_in_hand import ShotgunInHand, UziInHand, KnifeInHand
 from modules.weapon_item import WeaponItem
 from modules.tile import Tile
+from modules.enemy import Enemy
 
 
 tile_size = 50
@@ -50,10 +52,15 @@ class Level:
                                                 y * tile_size)
                         add_sprite(weapon, all_sprites, weapons_group)
                         weapon.add_inter_groups(walls_group)
+        for enemy in self.enemies:
+            add_sprite(enemy, all_sprites, enemies_group)
         return player
 
 
-level1 = Level('map1.txt')
+enemies1 = [Enemy(ShotgunInHand(), [9, 4], (6, 3)),
+            Enemy(UziInHand(), [4, 8], (3, 3)),
+            Enemy(KnifeInHand(), [12, 9], (7, 0))]
+level1 = Level('map1.txt', *enemies1)
 level2 = Level('map2.txt')
 level_list = [level1, level2]
 
