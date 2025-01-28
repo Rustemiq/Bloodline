@@ -4,6 +4,18 @@ from modules.rotate_on_pivot import rotate_on_pivot
 
 tile_size = 50
 enemy_center = 24, 25
+neighbours = [(1, 1), (-1, -1), (1, -1), (-1, 1),
+              (-1, 0), (1, 0), (0, -1), (0, 1)]
+rotations = {
+    (1, 0): 0,
+    (0, 1): -90,
+    (0, -1): 90,
+    (-1, 0): 180,
+    (1, 1): -45,
+    (-1, 1): -135,
+    (1, -1): 45,
+    (-1, -1): 135
+}
 
 
 class EnemyMovement:
@@ -13,9 +25,64 @@ class EnemyMovement:
         # будем измерять позицию в клеточках
         self.build_walk_around_path(walk_around_pattern)
         self.walk_around_iteration = 0
-        self.distance = 0
+        self.run_to_player_iteration = 0
+        self.distance = tile_size
         self.speed = 3
-        self.aggressive = False
+
+    def is_neighbour_availability(self, x, y, neighbour_offset, alg_map):
+        n_x, n_y = x + neighbour_offset[0], y + neighbour_offset[1]
+        if len(alg_map[0]) > n_x >= 0 and len(alg_map) > n_y >= 0:
+            n_cell = alg_map[n_y][n_x]
+            if neighbour_offset[0] != 0 and neighbour_offset[1] != 0:
+                if not self.is_neighbour_availability(
+                    x, y, (neighbour_offset[0], 0), alg_map):
+                    return False
+                if not self.is_neighbour_availability(
+                        x, y, (0, neighbour_offset[1]), alg_map):
+                    return False
+            return n_cell != '#'
+        return False
+
+    def fill_neighbours(self, x, y, alg_map, deep):
+        for neighbour in neighbours:
+            if self.is_neighbour_availability(x, y, neighbour, alg_map):
+                if type(alg_map[y + neighbour[1]][x + neighbour[0]]) is not int:
+                    alg_map[y + neighbour[1]][x + neighbour[0]] = deep + 1
+
+    def fill_map(self, alg_map, deep, x_to, y_to):
+        if type(alg_map[y_to][x_to]) is int:
+            return alg_map
+        neighbours = [[-1,0], [1,0], [0,-1], [0,1]]
+        for y in range(len(alg_map)):
+            for x in range(len(alg_map[0])):
+                cell = alg_map[y][x]
+                if cell == deep:
+                    self.fill_neighbours(x, y, alg_map, deep)
+        return self.fill_map(alg_map, deep + 1, x_to, y_to)
+
+    def restore_route(self, filled_map, x_from, y_from, x_to, y_to, route):
+        curr_x, curr_y = x_to, y_to
+        if (curr_x, curr_y) == (x_from, y_from):
+            return route
+        directions = {}
+        for neighbour in neighbours:
+            if self.is_neighbour_availability(
+                    curr_x, curr_y, neighbour, filled_map):
+                dist = filled_map[curr_y + neighbour[1]][curr_x + neighbour[0]]
+                if type(dist) is int:
+                    directions[dist] = neighbour
+        direction = directions[min(directions.keys())]
+        route.insert(0, (-direction[0], -direction[1]))
+        curr_x += direction[0]
+        curr_y += direction[1]
+        return self.restore_route(
+            filled_map, x_from, y_from, curr_x, curr_y, route)
+
+    def build_route(self, x_to, y_to, level_map):
+        algorithm_map = [list(row) for row in level_map]
+        algorithm_map[self.curr_pos[1]][self.curr_pos[0]] = 0
+        filled_map = (self.fill_map(algorithm_map, 0, x_to, y_to))
+        return self.restore_route(filled_map, *self.curr_pos, x_to, y_to, [])
 
     def build_walk_around_path(self, pattern):
         self.walk_around_path = []
@@ -37,15 +104,8 @@ class EnemyMovement:
         self.image_offset = rotate_on_pivot(enemy_center, 90 - direction,
                                             self.image, self.sample_image)
 
-    def go_to_neigbour_tile(self, offset):
-        if offset == (1, 0):
-            self.rotate(0)
-        if offset == (0, 1):
-            self.rotate(-90)
-        if offset == (-1, 0):
-            self.rotate(180)
-        if offset == (0, -1):
-            self.rotate(90)
+    def go_to_neighbour_tile(self, offset):
+        self.rotate(rotations[offset])
         self.walk_direction = offset
         self.distance = tile_size
 
@@ -54,20 +114,30 @@ class EnemyMovement:
             self.walk_around_iteration = 0
         offset = self.walk_around_path[self.walk_around_iteration]
         self.walk_around_iteration += 1
-        self.go_to_neigbour_tile(offset)
+        self.go_to_neighbour_tile(offset)
 
-    def move(self):
+    def run_to_player(self, route_to_player):
+        if route_to_player == []:
+            return
+        offset = route_to_player[self.run_to_player_iteration]
+        self.run_to_player_iteration += 1
+        self.go_to_neighbour_tile(offset)
+
+    def move(self, state, rect, route_to_player):
         if self.distance <= 0:
-            if not self.aggressive:
+            if state == 'walk_around':
                 self.walk_around()
-            self.curr_pos[0] += self.walk_direction[0]
-            self.curr_pos[1] += self.walk_direction[1]
+            elif state == 'shoot':
+                self.distance = 0
+            elif state == 'run_to_player':
+                self.run_to_player(route_to_player)
         if self.distance != 0:
-            self.distance -= self.speed
-            self.rect.x += self.walk_direction[0] * self.speed
-            self.rect.y += self.walk_direction[1] * self.speed
-            if self.distance < 0:
-                self.rect.x += self.walk_direction[0] * self.distance
-                self.rect.y += self.walk_direction[1] * self.distance
-
-
+            if state == 'walk_around' or state == 'run_to_player':
+                self.distance -= self.speed
+                rect.x += self.walk_direction[0] * self.speed
+                rect.y += self.walk_direction[1] * self.speed
+                if self.distance <= 0:
+                    rect.x += self.walk_direction[0] * self.distance
+                    rect.y += self.walk_direction[1] * self.distance
+                    self.curr_pos[0] += self.walk_direction[0]
+                    self.curr_pos[1] += self.walk_direction[1]

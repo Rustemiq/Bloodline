@@ -48,7 +48,7 @@ class WeaponItem(pygame.sprite.Sprite):
             for enemy in self.enemies_group:
                 if pygame.sprite.collide_rect(self, enemy):
                     self.throw_speed = 0
-                    enemy.destroy('not_lethal')
+                    enemy.destroy(is_lethal=False)
                     break
             for wall in self.walls_group:
                 if pygame.sprite.collide_mask(self, wall):

@@ -8,9 +8,9 @@ dead_images = [load_image('enemy_dead1.png'),
 knocked_out_image = load_image('enemy_knocked_out.png')
 
 class EnemyDestroyed(pygame.sprite.Sprite):
-    def __init__(self, enemy_rect, reason, all_sprites, dead_enemies):
+    def __init__(self, enemy_rect, is_lethal, all_sprites, dead_enemies):
         super().__init__(all_sprites, dead_enemies)
-        if reason == 'lethal':
+        if is_lethal:
             self.image = choice(dead_images)
         else:
             self.image = knocked_out_image

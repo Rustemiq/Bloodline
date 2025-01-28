@@ -100,4 +100,4 @@ class Player(pygame.sprite.Sprite):
     def use_knife(self):
         for enemy in self.enemies_group:
             if pygame.sprite.collide_rect(self, enemy):
-                enemy.destroy('lethal')
+                enemy.destroy(is_lethal=True)

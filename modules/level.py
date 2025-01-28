@@ -55,7 +55,9 @@ class Level:
                         weapon.add_inter_groups(walls_group, enemies_group)
         for enemy in self.enemies:
             add_sprite(enemy, all_sprites, enemies_group)
-            enemy.add_inter_groups(all_sprites, dead_enemies_group)
+            enemy.add_inter_groups(all_sprites,
+                                   dead_enemies_group, walls_group, player)
+            enemy.level_map = level_map
         return player
 
 

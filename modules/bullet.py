@@ -23,7 +23,7 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.y = self.y
         for enemy in self.enemies_group:
             if pygame.sprite.collide_rect(self, enemy):
-                enemy.destroy('lethal')
+                enemy.destroy(is_lethal=True)
                 self.kill()
         if pygame.sprite.spritecollideany(self, self.walls_group):
             self.kill()
