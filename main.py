@@ -1,5 +1,4 @@
 import pygame
-import os
 
 from modules.camera import Camera
 from modules.level import level_list
@@ -13,16 +12,9 @@ enemies_group = pygame.sprite.Group()
 dead_enemies_group = pygame.sprite.Group()
 
 
-def add_sprite(sprite, *groups):
-    for group in groups:
-        group.add(sprite)
-    return sprite
-
-
 def weapon_interaction():
     throwed_weapon = player.weapon_interaction()
     if throwed_weapon is not None:
-        add_sprite(throwed_weapon, all_sprites, weapons_group)
         throwed_weapon.add_inter_groups(walls_group, enemies_group)
 
 
@@ -32,7 +24,6 @@ def shoot():
             bullets = player.weapon.shoot(player.direction)
             if bullets is not None:
                 for bullet in bullets:
-                    add_sprite(bullet, all_sprites, bullets_group)
                     bullet.add_inter_groups(walls_group, enemies_group)
 
 
@@ -74,7 +65,8 @@ class LevelIterator:
             pass #окончание игры
         level = level_list[self.lvl_index]
         player = level.load_sprites(all_sprites, weapons_group, walls_group,
-                                tiles_group, enemies_group, dead_enemies_group)
+                                tiles_group, enemies_group, dead_enemies_group,
+                                    bullets_group)
         return player
 
 

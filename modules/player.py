@@ -1,5 +1,6 @@
 import pygame
 import math
+
 from modules.load_image import load_image
 from modules.weapon_converter import convert_to_hand, convert_to_item
 from modules.rotate_on_pivot import rotate_on_pivot
@@ -16,8 +17,8 @@ player_center = 24, 25
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, weapon, pos_x, pos_y):
-        super().__init__()
+    def __init__(self, weapon, pos_x, pos_y, *groups):
+        super().__init__(*groups)
         if weapon == 'empty':
             self.sample_image = self.image = player_images['empty']
         else:
@@ -28,10 +29,13 @@ class Player(pygame.sprite.Sprite):
         self.weapon = weapon
         self.speed = 4
 
-    def add_inter_groups(self, walls_group, weapons_group, enemies_group):
+    def add_inter_groups(self, walls_group, weapons_group, enemies_group,
+                         bullets_group, all_sprites):
         self.walls_group = walls_group
         self.weapons_group = weapons_group
         self.enemies_group = enemies_group
+        self.bullets_group = bullets_group
+        self.all_sprites = all_sprites
 
     def draw(self, screen, font):
         hitbox_correction = 3
@@ -76,7 +80,9 @@ class Player(pygame.sprite.Sprite):
 
     def throw_weapon(self):
         if self.weapon != 'empty':
-            throwed_weapon = convert_to_item(self.weapon, self.rect)
+            throwed_weapon = convert_to_item(self.weapon,self.rect,
+                                             self.weapons_group,
+                                             self.all_sprites)
             throwed_weapon.throw(self.direction)
             self.weapon = 'empty'
             self.sample_image = self.image = player_images['empty']
@@ -87,7 +93,8 @@ class Player(pygame.sprite.Sprite):
         weapons = pygame.sprite.spritecollide(self, self.weapons_group, False)
         weapons = list(filter(lambda wp: not wp.thrown, weapons))
         if weapons != []:
-            self.weapon = convert_to_hand(weapons[0])
+            self.weapon = convert_to_hand(weapons[0], self.bullets_group,
+                                          self.all_sprites)
             self.sample_image = self.image = player_images[self.weapon.type]
             self.turn_to_mouse(pygame.mouse.get_pos())
             weapons[0].kill()

@@ -16,8 +16,8 @@ enemy_images = {
 
 
 class Enemy(pygame.sprite.Sprite, EnemyMovement):
-    def __init__(self, weapon, pos, walk_around_pattern):
-        pygame.sprite.Sprite.__init__(self)
+    def __init__(self, weapon, pos, walk_around_pattern, *groups):
+        pygame.sprite.Sprite.__init__(self, *groups)
         EnemyMovement.__init__(self, pos, walk_around_pattern)
         self.sample_image = self.image = enemy_images[weapon.type]
         self.rect = pygame.Rect(tile_size * pos[0],

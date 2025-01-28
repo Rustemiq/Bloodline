@@ -3,8 +3,8 @@ import math
 
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, direction):
-        super().__init__()
+    def __init__(self, x, y, direction, *groups):
+        super().__init__(*groups)
         self.image = pygame.Surface((4, 4))
         self.image.fill('yellow')
         self.rect = pygame.Rect(x, y, 4, 4)

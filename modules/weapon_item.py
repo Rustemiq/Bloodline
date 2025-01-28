@@ -15,8 +15,8 @@ weapon_ammo = {
 
 
 class WeaponItem(pygame.sprite.Sprite):
-    def __init__(self, type, x, y, ammo=None):
-        super().__init__()
+    def __init__(self, type, x, y, *groups, ammo=None):
+        super().__init__(*groups)
         self.type = type
         self.image = weapon_images[self.type]
         self.rect = self.image.get_rect().move(x, y)
