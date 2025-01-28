@@ -82,7 +82,10 @@ class Player(pygame.sprite.Sprite):
         if self.weapon != 'empty':
             throwed_weapon = convert_to_item(self.weapon,self.rect,
                                              self.weapons_group,
-                                             self.all_sprites)
+                                             self.enemies_group,
+                                             self, self.all_sprites)
+            throwed_weapon.add_inter_groups(self.walls_group,
+                                            self.enemies_group)
             throwed_weapon.throw(self.direction)
             self.weapon = 'empty'
             self.sample_image = self.image = player_images['empty']
@@ -94,7 +97,7 @@ class Player(pygame.sprite.Sprite):
         weapons = list(filter(lambda wp: not wp.thrown, weapons))
         if weapons != []:
             self.weapon = convert_to_hand(weapons[0], self.bullets_group,
-                                          self.all_sprites)
+                                          self.enemies_group, self.all_sprites)
             self.sample_image = self.image = player_images[self.weapon.type]
             self.turn_to_mouse(pygame.mouse.get_pos())
             weapons[0].kill()
@@ -108,3 +111,6 @@ class Player(pygame.sprite.Sprite):
         for enemy in self.enemies_group:
             if pygame.sprite.collide_rect(self, enemy):
                 enemy.destroy(is_lethal=True)
+
+    def destroy(self, is_lethal):
+        pass

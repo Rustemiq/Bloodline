@@ -16,7 +16,8 @@ class Level:
         self.enemies = enemies
 
     def load_sprites(self, all_sprites, weapons_group, walls_group, tiles_group,
-                     enemies_group, dead_enemies_group, bullets_group):
+                     enemies_group, dead_enemies_group, bullets_group,
+                     player_group):
         for sprite in all_sprites:
             sprite.kill()
         fullname = os.path.join('maps', self.map_name)
@@ -31,7 +32,8 @@ class Level:
                 else:
                     Tile('empty', x, y, tiles_group, all_sprites)
                     if cell == '@':
-                        player = Player('empty', x, y, all_sprites)
+                        player = Player('empty', x, y, player_group,
+                                        all_sprites)
                         player.add_inter_groups(walls_group, weapons_group,
                                                 enemies_group, bullets_group,
                                                 all_sprites)
@@ -52,8 +54,11 @@ class Level:
                         weapon.add_inter_groups(walls_group, enemies_group)
         for enemy_data in self.enemies:
             enemy = Enemy(*enemy_data, enemies_group, all_sprites)
-            enemy.add_inter_groups(all_sprites,
-                                   dead_enemies_group, walls_group, player)
+            if enemy.weapon.type != 'knife':
+                enemy.weapon.add_inter_groups(bullets_group, player_group,
+                                              all_sprites)
+            enemy.add_inter_groups(dead_enemies_group, walls_group,
+                         player_group, player, all_sprites)
             enemy.level_map = level_map
         return player
 

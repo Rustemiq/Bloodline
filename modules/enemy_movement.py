@@ -1,4 +1,5 @@
 import pygame.transform
+import math
 
 from modules.rotate_on_pivot import rotate_on_pivot
 
@@ -28,6 +29,7 @@ class EnemyMovement:
         self.run_to_player_iteration = 0
         self.distance = tile_size
         self.speed = 3
+        self.aiming_timer = None
 
     def is_neighbour_availability(self, x, y, neighbour_offset, alg_map):
         n_x, n_y = x + neighbour_offset[0], y + neighbour_offset[1]
@@ -123,12 +125,29 @@ class EnemyMovement:
         self.run_to_player_iteration += 1
         self.go_to_neighbour_tile(offset)
 
-    def move(self, state, rect, route_to_player):
+    def shoot_to_player(self, rect, player_rect, weapon, player_group,
+                        walls_group):
+        x_rel = player_rect.centerx - rect.centerx
+        y_rel = player_rect.centery - rect.centery
+        direction = (180 / math.pi * -math.atan2(y_rel, x_rel))
+        self.rotate(direction)
+        if self.aiming_timer >= 0:
+            self.aiming_timer -= 1
+            return
+        bullets = weapon.shoot(rect.centerx, rect.centery, 90 - direction)
+        if bullets is not None:
+            for bullet in bullets:
+                bullet.add_inter_groups(walls_group, player_group)
+        weapon.charge()
+
+    def move(self, state, rect, player_rect, weapon,
+             route_to_player, player_group, walls_group):
         if self.distance <= 0:
             if state == 'walk_around':
                 self.walk_around()
             elif state == 'shoot':
-                self.distance = 0
+                self.shoot_to_player(rect, player_rect, weapon,
+                                     player_group, walls_group)
             elif state == 'run_to_player':
                 self.run_to_player(route_to_player)
         if self.distance != 0:

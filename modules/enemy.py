@@ -30,10 +30,12 @@ class Enemy(pygame.sprite.Sprite, EnemyMovement):
         self.player_last_seen_in = -1, -1
         self.route_to_player = []
 
-    def add_inter_groups(self, all_sprites, dead_enemies, walls_group, player):
+    def add_inter_groups(self, dead_enemies, walls_group,
+                         player_group, player, all_sprites):
         self.all_sprites = all_sprites
         self.dead_enemies = dead_enemies
         self.walls_group = walls_group
+        self.player_group = player_group
         self.player = player
 
     def is_player_visible(self):
@@ -58,14 +60,20 @@ class Enemy(pygame.sprite.Sprite, EnemyMovement):
         screen.blit(self.image, (x, y))
 
     def update(self):
-        self.move(self.state, self.rect, self.route_to_player)
+        self.move(self.state, self.rect, self.player.rect, self.weapon,
+                  self.route_to_player, self.player_group, self.walls_group)
         if self.distance <= 0:
             if self.is_player_visible():
                 player_x = (round((self.player.rect.x - self.rect.x)
                                   / tile_size) + self.curr_pos[0])
                 player_y = (round((self.player.rect.y - self.rect.y)
                                   / tile_size) + self.curr_pos[1])
-                self.state = 'shoot'
+                if self.weapon.type != 'knife':
+                    if self.state != 'shoot':
+                        self.aiming_timer = 15
+                    self.state = 'shoot'
+                else:
+                    self.state = 'use_knife'
                 self.player_last_seen_in = player_x, player_y
             if self.player_last_seen_in != (-1, -1):
                 if not self.is_player_visible() or self.weapon.type == 'knife':
@@ -73,6 +81,6 @@ class Enemy(pygame.sprite.Sprite, EnemyMovement):
                     self.run_to_player_iteration = 0
                     self.route_to_player = self.build_route(
                         *self.player_last_seen_in, self.level_map)
-                    self.speed = 5
+                    self.speed = 4
             if tuple(self.curr_pos) == self.player_last_seen_in:
                 self.state = 'look_around'

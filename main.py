@@ -10,6 +10,7 @@ all_sprites = pygame.sprite.Group()
 bullets_group = pygame.sprite.Group()
 enemies_group = pygame.sprite.Group()
 dead_enemies_group = pygame.sprite.Group()
+player_group = pygame.sprite.Group()
 
 
 def weapon_interaction():
@@ -21,7 +22,9 @@ def weapon_interaction():
 def shoot():
     if pygame.mouse.get_pressed(3)[0]:
         if player.weapon != 'empty' and player.weapon.type != 'knife':
-            bullets = player.weapon.shoot(player.direction)
+            bullets = player.weapon.shoot(player.rect.centerx,
+                                          player.rect.centery,
+                                          player.direction)
             if bullets is not None:
                 for bullet in bullets:
                     bullet.add_inter_groups(walls_group, enemies_group)
@@ -66,7 +69,7 @@ class LevelIterator:
         level = level_list[self.lvl_index]
         player = level.load_sprites(all_sprites, weapons_group, walls_group,
                                 tiles_group, enemies_group, dead_enemies_group,
-                                    bullets_group)
+                                bullets_group, player_group)
         return player
 
 
