@@ -3,7 +3,7 @@ import math
 
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, direction, *groups):
+    def __init__(self, x, y, direction, target_type, *groups):
         super().__init__(*groups)
         self.image = pygame.Surface((4, 4))
         self.image.fill('yellow')
@@ -11,6 +11,7 @@ class Bullet(pygame.sprite.Sprite):
         self.x, self.y = x, y
         self.speed = 15
         self.direction = direction
+        self.target_type = target_type
 
     def add_inter_groups(self, walls_group, targets_group):
         self.walls_group = walls_group
@@ -23,7 +24,10 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.y = self.y
         for target in self.targets_group:
             if pygame.sprite.collide_rect(self, target):
-                target.destroy(is_lethal=True)
+                if self.target_type == 'enemies':
+                    target.destroy(is_lethal=True)
+                else:
+                    target.die()
                 self.kill()
         if pygame.sprite.spritecollideany(self, self.walls_group):
             self.kill()

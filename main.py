@@ -28,6 +28,8 @@ def shoot():
             if bullets is not None:
                 for bullet in bullets:
                     bullet.add_inter_groups(walls_group, enemies_group)
+            for enemy in enemies_group:
+                enemy.player_shoots()
 
 
 def use_knife():

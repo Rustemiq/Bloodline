@@ -112,5 +112,5 @@ class Player(pygame.sprite.Sprite):
             if pygame.sprite.collide_rect(self, enemy):
                 enemy.destroy(is_lethal=True)
 
-    def destroy(self, is_lethal):
+    def die(self):
         pass

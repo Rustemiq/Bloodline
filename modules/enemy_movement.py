@@ -107,7 +107,8 @@ class EnemyMovement:
                                             self.image, self.sample_image)
 
     def go_to_neighbour_tile(self, offset):
-        self.rotate(rotations[offset])
+        self.direction = rotations[offset]
+        self.rotate(self.direction)
         self.walk_direction = offset
         self.distance = tile_size
 
@@ -129,34 +130,26 @@ class EnemyMovement:
                         walls_group):
         x_rel = player_rect.centerx - rect.centerx
         y_rel = player_rect.centery - rect.centery
-        direction = (180 / math.pi * -math.atan2(y_rel, x_rel))
-        self.rotate(direction)
-        if self.aiming_timer >= 0:
-            self.aiming_timer -= 1
-            return
-        bullets = weapon.shoot(rect.centerx, rect.centery, 90 - direction)
+        self.direction = (180 / math.pi * -math.atan2(y_rel, x_rel))
+        self.rotate(self.direction)
+        bullets = weapon.shoot(rect.centerx, rect.centery, 90 - self.direction)
         if bullets is not None:
             for bullet in bullets:
                 bullet.add_inter_groups(walls_group, player_group)
         weapon.charge()
 
-    def move(self, state, rect, player_rect, weapon,
-             route_to_player, player_group, walls_group):
+    def move(self, state, rect, route_to_player):
         if self.distance <= 0:
             if state == 'walk_around':
                 self.walk_around()
-            elif state == 'shoot':
-                self.shoot_to_player(rect, player_rect, weapon,
-                                     player_group, walls_group)
             elif state == 'run_to_player':
                 self.run_to_player(route_to_player)
         if self.distance != 0:
-            if state == 'walk_around' or state == 'run_to_player':
-                self.distance -= self.speed
-                rect.x += self.walk_direction[0] * self.speed
-                rect.y += self.walk_direction[1] * self.speed
-                if self.distance <= 0:
-                    rect.x += self.walk_direction[0] * self.distance
-                    rect.y += self.walk_direction[1] * self.distance
-                    self.curr_pos[0] += self.walk_direction[0]
-                    self.curr_pos[1] += self.walk_direction[1]
+            self.distance -= self.speed
+            rect.x += self.walk_direction[0] * self.speed
+            rect.y += self.walk_direction[1] * self.speed
+            if self.distance <= 0:
+                rect.x += self.walk_direction[0] * self.distance
+                rect.y += self.walk_direction[1] * self.distance
+                self.curr_pos[0] += self.walk_direction[0]
+                self.curr_pos[1] += self.walk_direction[1]

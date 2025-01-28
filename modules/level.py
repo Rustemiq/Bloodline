@@ -63,8 +63,8 @@ class Level:
         return player
 
 
-enemies1 = [(ShotgunInHand(), [9, 4], (6, 3)),
-            (UziInHand(), [4, 8], (3, 3)),
+enemies1 = [(ShotgunInHand(target='player'), [9, 4], (6, 3)),
+            (UziInHand(target='player'), [4, 8], (3, 3)),
             (KnifeInHand(), [12, 9], (7, 0))]
 level1 = Level('map1.txt', *enemies1)
 level2 = Level('map2.txt')

@@ -5,10 +5,11 @@ from modules.bullet import Bullet
 gun_len = 37
 
 class WeaponInHand:
-    def __init__(self, ammo, type, recharge):
+    def __init__(self, ammo, type, recharge, target):
         self.ammo = ammo
         self.type = type
         self.recharge = self.charge_level = recharge
+        self.target = target
 
     def add_inter_groups(self, bullets_group, targets_group, all_sprites):
         self.bullets_group = bullets_group
@@ -26,10 +27,10 @@ class WeaponInHand:
 
 
 class ShotgunInHand(WeaponInHand):
-    def __init__(self, ammo=None):
+    def __init__(self, ammo=None, target='enemies'):
         if ammo == None:
             ammo = 6
-        super().__init__(ammo, 'shotgun', 40)
+        super().__init__(ammo, 'shotgun', 40, target)
 
     def shoot(self, x, y, direction):
         if self.charge_level >= self.recharge and self.ammo > 0:
@@ -41,23 +42,24 @@ class ShotgunInHand(WeaponInHand):
             bullets = []
             for i in range(8):
                 bullets.append(Bullet(x, y, direction + randint(-2, 2),
-                                      self.bullets_group, self.all_sprites))
+                                      self.target, self.bullets_group,
+                                      self.all_sprites))
                 direction += bullet_step
             return bullets
 
 
 class UziInHand(WeaponInHand):
-    def __init__(self, ammo=None):
+    def __init__(self, ammo=None, target='enemies'):
         if ammo == None:
             ammo = 30
-        super().__init__(ammo, 'uzi', 3)
+        super().__init__(ammo, 'uzi', 3, target)
 
     def shoot(self, x, y, direction):
         if self.charge_level >= self.recharge and self.ammo > 0:
             self.charge_level = 0
             self.ammo -= 1
             x, y = self.get_gunpoint_coord(x, y, direction)
-            bullets = [Bullet(x, y, direction + randint(-2, 2),
+            bullets = [Bullet(x, y, direction + randint(-2, 2), self.target,
                                       self.bullets_group, self.all_sprites)]
             return bullets
 

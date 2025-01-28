@@ -1,11 +1,9 @@
-from sys import intern
-
 import pygame
+import math
 
 from modules.load_image import load_image
 from modules.enemy_movement import EnemyMovement
 from modules.enemy_destroyed import EnemyDestroyed
-from copy import copy
 
 tile_size = 50
 enemy_images = {
@@ -13,6 +11,7 @@ enemy_images = {
     'shotgun': load_image('enemy_shotgun.png'),
     'uzi': load_image('enemy_uzi.png')
 }
+player_hearing_distance = 250
 
 
 class Enemy(pygame.sprite.Sprite, EnemyMovement):
@@ -29,6 +28,7 @@ class Enemy(pygame.sprite.Sprite, EnemyMovement):
         self.walk_around()
         self.player_last_seen_in = -1, -1
         self.route_to_player = []
+        self.is_player_heard = False
 
     def add_inter_groups(self, dead_enemies, walls_group,
                          player_group, player, all_sprites):
@@ -59,28 +59,64 @@ class Enemy(pygame.sprite.Sprite, EnemyMovement):
         y = (self.rect.y + self.image_offset[1] - hitbox_correction)
         screen.blit(self.image, (x, y))
 
+    def start_shooting(self):
+        if self.weapon.type != 'knife':
+            self.aiming_timer = 15
+            self.state = 'shoot'
+        else:
+            self.state = 'use_knife'
+
+    def start_run_to_player(self):
+        self.state = 'run_to_player'
+        self.run_to_player_iteration = 0
+        player_x = (round((self.player.rect.x - self.rect.x)
+                          / tile_size) + self.curr_pos[0])
+        player_y = (round((self.player.rect.y - self.rect.y)
+                          / tile_size) + self.curr_pos[1])
+        self.route_to_player = self.build_route(
+            player_x, player_y, self.level_map)
+        self.player_last_seen_in = player_x, player_y
+        self.speed = 5
+
+    def start_look_around(self):
+        self.look_around_timer = 120
+        self.state = 'look_around'
+
+    def look_around(self):
+        self.look_around_timer -= 1
+        if 110 >= self.look_around_timer >= 90 or self.look_around_timer < 10:
+            self.direction -= 4
+        elif 20 <= self.look_around_timer <= 40:
+            self.direction += 4
+        self.rotate(self.direction)
+
+    def player_shoots(self):
+        dist_x = abs(self.player.rect.x - self.rect.x)
+        dist_y = abs(self.player.rect.y - self.rect.y)
+        distance = math.sqrt(dist_x ** 2 + dist_y ** 2)
+        if distance <= player_hearing_distance:
+            self.is_player_heard = True
+
     def update(self):
-        self.move(self.state, self.rect, self.player.rect, self.weapon,
-                  self.route_to_player, self.player_group, self.walls_group)
+        if self.state == 'walk_around' or self.state == 'run_to_player':
+            self.move(self.state, self.rect, self.route_to_player)
+        if self.state == 'shoot':
+            if self.aiming_timer <= 0:
+                self.shoot_to_player(self.rect, self.player.rect, self.weapon,
+                                     self.player_group, self.walls_group)
+            else:
+                self.aiming_timer -= 1
+        if self.state == 'look_around':
+            self.look_around()
+            if self.look_around_timer == 0:
+                self.state = 'keep_watch'
         if self.distance <= 0:
-            if self.is_player_visible():
-                player_x = (round((self.player.rect.x - self.rect.x)
-                                  / tile_size) + self.curr_pos[0])
-                player_y = (round((self.player.rect.y - self.rect.y)
-                                  / tile_size) + self.curr_pos[1])
-                if self.weapon.type != 'knife':
-                    if self.state != 'shoot':
-                        self.aiming_timer = 15
-                    self.state = 'shoot'
-                else:
-                    self.state = 'use_knife'
-                self.player_last_seen_in = player_x, player_y
-            if self.player_last_seen_in != (-1, -1):
-                if not self.is_player_visible() or self.weapon.type == 'knife':
-                    self.state = 'run_to_player'
-                    self.run_to_player_iteration = 0
-                    self.route_to_player = self.build_route(
-                        *self.player_last_seen_in, self.level_map)
-                    self.speed = 4
-            if tuple(self.curr_pos) == self.player_last_seen_in:
-                self.state = 'look_around'
+            if self.is_player_visible() and self.state != 'shoot':
+                self.start_shooting()
+            if ((self.state == 'shoot' and not self.is_player_visible())
+                    or self.state == 'use_knife' or self.is_player_heard):
+                self.start_run_to_player()
+                self.is_player_heard = False
+            if (tuple(self.curr_pos) == self.player_last_seen_in
+                    and self.state == 'run_to_player'):
+                self.start_look_around()
