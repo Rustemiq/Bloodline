@@ -49,6 +49,31 @@ def put_to_death_player():
         enemy.player_died()
 
 
+def draw_information():
+    if player.weapon != 'empty' and player.weapon.type != 'knife':
+        string = "Ammo: " + str(player.weapon.ammo)
+        text = font1.render(string,
+                           True, (220, 20, 60))
+        text_y = HEIGHT - text.get_height()
+        screen.blit(text, (0, text_y))
+    if not player.is_alive:
+        string = "PRESS R TO RESTART"
+        text = font1.render(string,
+                           True, (220, 20, 60))
+        text_y = HEIGHT - text.get_height() - 50
+        screen.blit(text, (0, text_y))
+    if is_level_cleared():
+        string = "PRESS SPACE TO NEXT LEVEL"
+        text = font2.render(string,
+                           True, (220, 20, 60))
+        text_y = HEIGHT - text.get_height() - 40
+        screen.blit(text, (0, text_y))
+
+
+def is_level_cleared():
+    return len(enemies_group) == 0 and player.is_alive
+
+
 def update_all():
     weapons_group.update()
     bullets_group.update()
@@ -63,8 +88,9 @@ def draw_all(screen):
     weapons_group.draw(screen)
     for enemy in enemies_group:
         enemy.draw(screen)
-    player.draw(screen, font)
+    player.draw(screen)
     bullets_group.draw(screen)
+    draw_information()
 
 
 class LevelIterator:
@@ -87,7 +113,7 @@ class LevelIterator:
                                 tiles_group, enemies_group, dead_enemies_group,
                                 bullets_group, player_group)
         if self.player_weapon is not None:
-            player.weapon = copy(self.player_weapon)
+            player.set_weapon(self.player_weapon)
         return player
 
 
@@ -97,7 +123,8 @@ if __name__ == '__main__':
     pygame.display.set_caption('Bloodline')
     size = WIDTH, HEIGHT
     screen = pygame.display.set_mode(size)
-    font = pygame.font.Font(None, 50)
+    font1 = pygame.font.Font(None, 50)
+    font2 = pygame.font.Font(None, 35)
     clock = pygame.time.Clock()
     fps = 60
     running = True
@@ -116,6 +143,16 @@ if __name__ == '__main__':
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 3:
                         weapon_interaction()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        if is_level_cleared():
+                            player = lvl_iterator.__next__(player)
+                            #обновим камеру, чтобы игрок повернулся в правильную
+                            #сторону
+                            camera.update(player)
+                            camera.apply()
+                            player.turn_to_mouse(pygame.mouse.get_pos())
+
             else:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_r:
