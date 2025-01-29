@@ -138,6 +138,11 @@ class EnemyMovement:
                 bullet.add_inter_groups(walls_group, player_group)
         weapon.charge()
 
+    def use_knife(self, player):
+        if pygame.sprite.collide_rect(self, player):
+            if player.weapon == 'empty' or player.weapon.type != 'knife':
+                player.die()
+
     def move(self, state, rect, route_to_player):
         if self.distance <= 0:
             if state == 'walk_around':

@@ -111,6 +111,8 @@ class Enemy(pygame.sprite.Sprite, EnemyMovement):
                                      self.player_group, self.walls_group)
             else:
                 self.aiming_timer -= 1
+        if self.state == 'run_to_player' and self.weapon.type == 'knife':
+            self.use_knife(self.player)
         if self.state == 'look_around':
             self.look_around()
             if self.look_around_timer == 0:
