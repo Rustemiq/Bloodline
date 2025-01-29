@@ -1,5 +1,6 @@
 import pygame
 import math
+from copy import copy
 
 from modules.load_image import load_image
 from modules.enemy_movement import EnemyMovement
@@ -17,18 +18,19 @@ player_hearing_distance = 250
 class Enemy(pygame.sprite.Sprite, EnemyMovement):
     def __init__(self, weapon, pos, walk_around_pattern, *groups):
         pygame.sprite.Sprite.__init__(self, *groups)
-        EnemyMovement.__init__(self, pos, walk_around_pattern)
+        EnemyMovement.__init__(self, pos[:], walk_around_pattern)
         self.sample_image = self.image = enemy_images[weapon.type]
         self.rect = pygame.Rect(tile_size * pos[0],
                                 tile_size * pos[1], 45, 45)
         self.image_x, self.image_y = 0, 0
-        self.weapon = weapon
+        self.weapon = copy(weapon)
         self.level_map = None
         self.state = 'walk_around'
         self.walk_around()
         self.player_last_seen_in = -1, -1
         self.route_to_player = []
         self.is_player_heard = False
+        self.is_player_alive = True
 
     def add_inter_groups(self, dead_enemies, walls_group,
                          player_group, player, all_sprites):
@@ -97,10 +99,13 @@ class Enemy(pygame.sprite.Sprite, EnemyMovement):
         if distance <= player_hearing_distance:
             self.is_player_heard = True
 
+    def player_died(self):
+        self.is_player_alive = False
+
     def update(self):
         if self.state == 'walk_around' or self.state == 'run_to_player':
             self.move(self.state, self.rect, self.route_to_player)
-        if self.state == 'shoot':
+        if self.state == 'shoot' and self.is_player_alive:
             if self.aiming_timer <= 0:
                 self.shoot_to_player(self.rect, self.player.rect, self.weapon,
                                      self.player_group, self.walls_group)
@@ -111,7 +116,8 @@ class Enemy(pygame.sprite.Sprite, EnemyMovement):
             if self.look_around_timer == 0:
                 self.state = 'keep_watch'
         if self.distance <= 0:
-            if self.is_player_visible() and self.state != 'shoot':
+            if (self.is_player_alive and
+                    self.is_player_visible() and self.state != 'shoot'):
                 self.start_shooting()
             if ((self.state == 'shoot' and not self.is_player_visible())
                     or self.state == 'use_knife' or self.is_player_heard):

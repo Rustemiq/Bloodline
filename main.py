@@ -1,4 +1,5 @@
 import pygame
+from copy import copy
 
 from modules.camera import Camera
 from modules.level import level_list
@@ -11,6 +12,7 @@ bullets_group = pygame.sprite.Group()
 enemies_group = pygame.sprite.Group()
 dead_enemies_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
+player = None
 
 
 def weapon_interaction():
@@ -42,6 +44,11 @@ def recharge():
         player.weapon.charge()
 
 
+def put_to_death_player():
+    for enemy in enemies_group:
+        enemy.player_died()
+
+
 def update_all():
     weapons_group.update()
     bullets_group.update()
@@ -63,15 +70,24 @@ def draw_all(screen):
 class LevelIterator:
     def __init__(self):
         self.lvl_index = -1
+        self.player_weapon = None
 
-    def __next__(self):
+    def restart(self):
+        self.lvl_index -= 1
+        return self.__next__()
+
+    def __next__(self, player=None):
         self.lvl_index += 1
         if self.lvl_index == len(level_list):
             pass #окончание игры
+        if player is not None:
+            self.player_weapon = copy(player.weapon)
         level = level_list[self.lvl_index]
         player = level.load_sprites(all_sprites, weapons_group, walls_group,
                                 tiles_group, enemies_group, dead_enemies_group,
                                 bullets_group, player_group)
+        if self.player_weapon is not None:
+            player.weapon = copy(self.player_weapon)
         return player
 
 
@@ -86,7 +102,7 @@ if __name__ == '__main__':
     fps = 60
     running = True
     lvl_iterator = LevelIterator()
-    player = lvl_iterator.__next__()
+    player = lvl_iterator.__next__(player)
     camera = Camera(all_sprites)
 
     while running:
@@ -94,15 +110,23 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.MOUSEMOTION:
-                player.turn_to_mouse(event.pos)
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 3:
-                    weapon_interaction()
-        shoot()
-        use_knife()
-        recharge()
-        player.get_move(pygame.key.get_pressed())
+            if player.is_alive:
+                if event.type == pygame.MOUSEMOTION:
+                    player.turn_to_mouse(event.pos)
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 3:
+                        weapon_interaction()
+            else:
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_r:
+                        player = lvl_iterator.restart()
+        if not player.is_alive:
+            put_to_death_player()
+        else:
+            shoot()
+            use_knife()
+            recharge()
+            player.get_move(pygame.key.get_pressed())
         update_all()
         draw_all(screen)
         pygame.display.flip()

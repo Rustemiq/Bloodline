@@ -1,3 +1,5 @@
+from random import randint
+
 import pygame
 import math
 
@@ -14,6 +16,7 @@ player_images = {
 }
 tile_size = 50
 player_center = 24, 25
+dead_player_center = 27, 47
 
 
 class Player(pygame.sprite.Sprite):
@@ -28,6 +31,7 @@ class Player(pygame.sprite.Sprite):
         self.image_offset = 0, 0
         self.weapon = weapon
         self.speed = 4
+        self.is_alive = True
 
     def add_inter_groups(self, walls_group, weapons_group, enemies_group,
                          bullets_group, all_sprites):
@@ -39,16 +43,27 @@ class Player(pygame.sprite.Sprite):
 
     def draw(self, screen, font):
         hitbox_correction = 3
+        dead_player_correction = -15
         #картинку необходимо сдвинуть относительно rect, дабы точка
         #вращения соответствовала голове персонажа
         x = (self.rect.x + self.image_offset[0] - hitbox_correction)
         y = (self.rect.y + self.image_offset[1] - hitbox_correction)
+        if not self.is_alive:
+            y += dead_player_correction
+            #корректировка, связанная с разным размером картинки живого
+            #и мертвого игрока
         screen.blit(self.image, (x, y))
         if self.weapon != 'empty' and self.weapon.type != 'knife':
             string = "Ammo: " + str(self.weapon.ammo)
             text = font.render(string,
                                True, (220, 20, 60))
             text_y = HEIGHT - text.get_height()
+            screen.blit(text, (0, text_y))
+        if not self.is_alive:
+            string = "PRESS R TO RESTART"
+            text = font.render(string,
+                               True, (220, 20, 60))
+            text_y = HEIGHT - text.get_height() - 50
             screen.blit(text, (0, text_y))
 
     def turn_to_mouse(self, mouse_pos):
@@ -113,4 +128,12 @@ class Player(pygame.sprite.Sprite):
                 enemy.destroy(is_lethal=True)
 
     def die(self):
-        pass
+        if self.is_alive:
+            self.is_alive = False
+            self.sample_image = load_image('player_dead.png')
+            self.direction = randint(0, 360)
+            self.image = pygame.transform.rotate(self.sample_image,
+                                                 self.direction)
+            self.image_offset = rotate_on_pivot(dead_player_center,
+                                                90 - self.direction, self.image,
+                                                self.sample_image)
