@@ -6,19 +6,21 @@ from modules.weapon_item import WeaponItem
 from modules.tile import Tile
 from modules.enemy import Enemy
 from modules.boss import Boss
+from modules.paper_note import PaperNote
 
 
 tile_size = 50
 
 
 class Level:
-    def __init__(self, map_name, *enemies):
+    def __init__(self, map_name, enemies=None, paper_notes=None):
         self.map_name = map_name
         self.enemies = enemies
+        self.paper_notes = paper_notes
 
     def load_sprites(self, all_sprites, weapons_group, walls_group, tiles_group,
                      enemies_group, dead_enemies_group, bullets_group,
-                     player_group, trigger_tile_group):
+                     player_group, trigger_tile_group, paper_notes_group):
         for sprite in all_sprites:
             sprite.kill()
         fullname = os.path.join('maps', self.map_name)
@@ -57,15 +59,22 @@ class Level:
                                                 y * tile_size, weapons_group,
                                                 all_sprites)
                         weapon.add_inter_groups(walls_group, enemies_group)
-        for enemy_data in self.enemies:
-            enemy = Enemy(*enemy_data, enemies_group, all_sprites)
-            if enemy.weapon.type != 'knife':
-                enemy.weapon.add_inter_groups(bullets_group, walls_group,
-                                              player_group, all_sprites)
-            enemy.add_inter_groups(dead_enemies_group, walls_group,
-                         player_group, player, all_sprites)
-            enemy.level_map = level_map
+        if self.enemies is not None:
+            for enemy_data in self.enemies:
+                enemy = Enemy(*enemy_data, enemies_group, all_sprites)
+                if enemy.weapon.type != 'knife':
+                    enemy.weapon.add_inter_groups(bullets_group, walls_group,
+                                                  player_group, all_sprites)
+                enemy.add_inter_groups(dead_enemies_group, walls_group,
+                             player_group, player, all_sprites)
+                enemy.level_map = level_map
+        if self.paper_notes is not None:
+            for paper_note_data in self.paper_notes:
+                paper_note = (
+                    PaperNote(*paper_note_data, paper_notes_group, all_sprites))
+                paper_note.add_inter_groups(player)
         return player
+
 
 
 class FinalLevel(Level):
@@ -83,8 +92,9 @@ enemies1 = [(ShotgunInHand(target='player'), [9, 4], (6, 3)),
             (UziInHand(target='player'), [4, 8], (3, 3)),
             (KnifeInHand(), [12, 9], (7, 0))]
 enemies2 = [(ShotgunInHand(target='player'), [12, 5], (1, 1))]
-level1 = Level('map1.txt', *enemies1)
-level2 = Level('map2.txt', *enemies2)
+paper_notes = [((3, 6), ['пример', 'подсказок', 'пример', 'подсказок'])]
+level1 = Level('map1.txt', enemies1, paper_notes)
+level2 = Level('map2.txt', enemies2)
 final_level = FinalLevel('final_map.txt', (5, 4))
 level_list = [level1, level2, final_level]
 

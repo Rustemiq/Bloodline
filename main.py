@@ -16,6 +16,7 @@ dead_enemies_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 boss_group = pygame.sprite.Group()
 trigger_tile_group = pygame.sprite.Group()
+paper_notes_group = pygame.sprite.Group()
 player = None
 boss = None
 
@@ -64,7 +65,7 @@ def draw_information():
                                True, (220, 20, 60))
             text_y = HEIGHT - text.get_height() - 50
             screen.blit(text, (0, text_y))
-        if is_level_cleared():
+        elif is_level_cleared():
             string = "PRESS SPACE TO NEXT LEVEL"
             text = font2.render(string,
                                True, (220, 20, 60))
@@ -131,17 +132,25 @@ def end_scene(player, boss):
         timer += 1
 
 
+def read_notes(screen):
+    for paper_note in paper_notes_group:
+        if pygame.sprite.collide_rect(player, paper_note):
+            paper_note.read(screen)
+
+
 def update_all():
     weapons_group.update()
     bullets_group.update()
     enemies_group.update()
     boss_group.update()
+    paper_notes_group.update()
     camera.update(player)
     camera.apply()
 
 
 def draw_all(screen):
     tiles_group.draw(screen)
+    paper_notes_group.draw(screen)
     dead_enemies_group.draw(screen)
     weapons_group.draw(screen)
     for enemy in enemies_group:
@@ -150,6 +159,8 @@ def draw_all(screen):
     player.draw(screen)
     bullets_group.draw(screen)
     draw_information()
+    for paper_note in paper_notes_group:
+        paper_note.show_text(screen, font2)
 
 
 class LevelIterator:
@@ -169,8 +180,10 @@ class LevelIterator:
             self.player_weapon = copy(player.weapon)
         level = level_list[self.lvl_index]
         player = level.load_sprites(all_sprites, weapons_group, walls_group,
-                                tiles_group, enemies_group, dead_enemies_group,
-                                bullets_group, player_group, trigger_tile_group)
+                                    tiles_group, enemies_group,
+                                    dead_enemies_group, bullets_group,
+                                    player_group, trigger_tile_group,
+                                    paper_notes_group)
         if self.player_weapon is not None:
             player.set_weapon(self.player_weapon)
         if self.lvl_index == len(level_list) - 1 and self.boss is None:
@@ -209,7 +222,7 @@ if __name__ == '__main__':
                         weapon_interaction()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
-                        if (is_level_cleared()
+                        if (is_level_cleared() and player.is_alive
                                 and not lvl_iterator.is_last_level):
                             player, boss = lvl_iterator.__next__(player)
                             #обновим камеру, чтобы игрок повернулся в правильную
@@ -217,6 +230,8 @@ if __name__ == '__main__':
                             camera.update(player)
                             camera.apply()
                             player.turn_to_mouse(pygame.mouse.get_pos())
+                    if event.key == pygame.K_e:
+                        read_notes(screen)
 
             else:
                 if event.type == pygame.KEYDOWN:
