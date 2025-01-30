@@ -66,22 +66,26 @@ class Player(pygame.sprite.Sprite):
                                              self.image, self.sample_image)
 
     def get_move(self, keys):
+        if self.weapon != 'empty' and self.weapon.type == 'knife':
+            boost = 1
+        else:
+            boost = 0
         if keys[pygame.constants.K_w]:
-            self.rect.y -= self.speed
+            self.rect.y -= self.speed + boost
             if pygame.sprite.spritecollideany(self, self.walls_group):
-                self.rect.y += self.speed
+                self.rect.y += self.speed + boost
         if keys[pygame.constants.K_a]:
-            self.rect.x -= self.speed
+            self.rect.x -= self.speed + boost
             if pygame.sprite.spritecollideany(self, self.walls_group):
-                self.rect.x += self.speed
+                self.rect.x += self.speed + boost
         if keys[pygame.constants.K_s]:
-            self.rect.y += self.speed
+            self.rect.y += self.speed + boost
             if pygame.sprite.spritecollideany(self, self.walls_group):
-                self.rect.y -= self.speed
+                self.rect.y -= self.speed + boost
         if keys[pygame.constants.K_d]:
-            self.rect.x += self.speed
+            self.rect.x += self.speed + boost
             if pygame.sprite.spritecollideany(self, self.walls_group):
-                self.rect.x -= self.speed
+                self.rect.x -= self.speed + boost
 
     def set_weapon(self, weapon):
         if weapon == 'empty':
@@ -93,10 +97,8 @@ class Player(pygame.sprite.Sprite):
 
     def throw_weapon(self):
         if self.weapon != 'empty':
-            throwed_weapon = convert_to_item(self.weapon,self.rect,
-                                             self.weapons_group,
-                                             self.enemies_group,
-                                             self, self.all_sprites)
+            throwed_weapon = convert_to_item(self.weapon, self.rect,
+                                             self.weapons_group, self.all_sprites)
             throwed_weapon.add_inter_groups(self.walls_group,
                                             self.enemies_group)
             throwed_weapon.throw(self.direction)

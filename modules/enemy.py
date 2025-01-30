@@ -33,11 +33,12 @@ class Enemy(pygame.sprite.Sprite, EnemyMovement):
         self.is_player_alive = True
 
     def add_inter_groups(self, dead_enemies, walls_group,
-                         player_group, player, all_sprites):
+                         player_group, weapons_group, player, all_sprites):
         self.all_sprites = all_sprites
         self.dead_enemies = dead_enemies
         self.walls_group = walls_group
         self.player_group = player_group
+        self.weapons_group = weapons_group
         self.player = player
 
     def is_player_visible(self):
@@ -63,7 +64,11 @@ class Enemy(pygame.sprite.Sprite, EnemyMovement):
 
     def start_shooting(self):
         if self.weapon.type != 'knife':
-            self.aiming_timer = 15
+            if (self.player.weapon != 'empty'
+                    and self.player.weapon.type == 'knife'):
+                self.aiming_timer = 25
+            else:
+                self.aiming_timer = 15
             self.state = 'shoot'
         else:
             self.state = 'use_knife'
@@ -106,10 +111,10 @@ class Enemy(pygame.sprite.Sprite, EnemyMovement):
         if self.state == 'walk_around' or self.state == 'run_to_player':
             self.move(self.state, self.rect, self.route_to_player)
         if self.state == 'shoot' and self.is_player_alive:
-            if self.aiming_timer <= 0:
-                self.shoot_to_player(self.rect, self.player.rect, self.weapon,
-                                     self.player_group, self.walls_group)
-            else:
+            self.shoot_to_player(self.rect, self.player.rect, self.weapon,
+                                 self.aiming_timer, self.player_group,
+                                 self.walls_group)
+            if self.aiming_timer > 0:
                 self.aiming_timer -= 1
         if self.state == 'run_to_player' and self.weapon.type == 'knife':
             self.use_knife(self.player)

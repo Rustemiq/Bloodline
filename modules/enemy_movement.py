@@ -126,17 +126,15 @@ class EnemyMovement:
         self.run_to_player_iteration += 1
         self.go_to_neighbour_tile(offset)
 
-    def shoot_to_player(self, rect, player_rect, weapon, player_group,
-                        walls_group):
+    def shoot_to_player(self, rect, player_rect, weapon, aiming_timer,
+                        player_group, walls_group):
         x_rel = player_rect.centerx - rect.centerx
         y_rel = player_rect.centery - rect.centery
         self.direction = (180 / math.pi * -math.atan2(y_rel, x_rel))
         self.rotate(self.direction)
-        bullets = weapon.shoot(rect.centerx, rect.centery, 90 - self.direction)
-        if bullets is not None:
-            for bullet in bullets:
-                bullet.add_inter_groups(walls_group, player_group)
-        weapon.charge()
+        if aiming_timer <= 0:
+            weapon.shoot(rect.centerx, rect.centery, 90 - self.direction)
+            weapon.charge()
 
     def use_knife(self, player):
         if pygame.sprite.collide_rect(self, player):

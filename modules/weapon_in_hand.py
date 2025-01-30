@@ -31,7 +31,7 @@ class WeaponInHand:
 class ShotgunInHand(WeaponInHand):
     def __init__(self, ammo=None, target='enemies'):
         if ammo == None:
-            ammo = 6
+            ammo = 4
         super().__init__(ammo, 'shotgun', 40, target)
 
     def shoot(self, x, y, direction):
@@ -39,10 +39,10 @@ class ShotgunInHand(WeaponInHand):
             self.charge_level = 0
             self.ammo -= 1
             x, y = self.get_gunpoint_coord(x, y, direction)
-            bullet_step = 3
-            direction -= bullet_step * 4
-            for i in range(8):
-                bullet = Bullet(x, y, direction + randint(-2, 2),
+            bullet_step = 1.5
+            direction -= bullet_step * 5
+            for i in range(10):
+                bullet = Bullet(x, y, direction + randint(-1, 1),
                                       self.target, self.bullets_group,
                                       self.all_sprites)
                 bullet.add_inter_groups(self.walls_group, self.targets_group)
@@ -52,7 +52,7 @@ class ShotgunInHand(WeaponInHand):
 class UziInHand(WeaponInHand):
     def __init__(self, ammo=None, target='enemies'):
         if ammo == None:
-            ammo = 30
+            ammo = 20
         super().__init__(ammo, 'uzi', 3, target)
 
     def shoot(self, x, y, direction):

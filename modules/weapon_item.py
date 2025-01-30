@@ -9,8 +9,8 @@ weapon_images = {
 }
 weapon_ammo = {
         'knife': 0,
-        'shotgun': 6,
-        'uzi': 30
+        'shotgun': 4,
+        'uzi': 20
 }
 
 

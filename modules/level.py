@@ -66,7 +66,7 @@ class Level:
                     enemy.weapon.add_inter_groups(bullets_group, walls_group,
                                                   player_group, all_sprites)
                 enemy.add_inter_groups(dead_enemies_group, walls_group,
-                             player_group, player, all_sprites)
+                             player_group, weapons_group, player, all_sprites)
                 enemy.level_map = level_map
         if self.paper_notes is not None:
             for paper_note_data in self.paper_notes:
