@@ -11,9 +11,11 @@ class WeaponInHand:
         self.recharge = self.charge_level = recharge
         self.target = target
 
-    def add_inter_groups(self, bullets_group, targets_group, all_sprites):
+    def add_inter_groups(self, bullets_group, walls_group, targets_group,
+                         all_sprites):
         self.bullets_group = bullets_group
         self.targets_group = targets_group
+        self.walls_group = walls_group
         self.all_sprites = all_sprites
 
     def get_gunpoint_coord(self, x, y, direction):
@@ -39,13 +41,12 @@ class ShotgunInHand(WeaponInHand):
             x, y = self.get_gunpoint_coord(x, y, direction)
             bullet_step = 3
             direction -= bullet_step * 4
-            bullets = []
             for i in range(8):
-                bullets.append(Bullet(x, y, direction + randint(-2, 2),
+                bullet = Bullet(x, y, direction + randint(-2, 2),
                                       self.target, self.bullets_group,
-                                      self.all_sprites))
+                                      self.all_sprites)
+                bullet.add_inter_groups(self.walls_group, self.targets_group)
                 direction += bullet_step
-            return bullets
 
 
 class UziInHand(WeaponInHand):
@@ -59,9 +60,9 @@ class UziInHand(WeaponInHand):
             self.charge_level = 0
             self.ammo -= 1
             x, y = self.get_gunpoint_coord(x, y, direction)
-            bullets = [Bullet(x, y, direction + randint(-2, 2), self.target,
-                                      self.bullets_group, self.all_sprites)]
-            return bullets
+            bullet = Bullet(x, y, direction + randint(-2, 2), self.target,
+                                      self.bullets_group, self.all_sprites)
+            bullet.add_inter_groups(self.walls_group, self.targets_group)
 
 
 class KnifeInHand():

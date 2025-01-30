@@ -5,6 +5,7 @@ from modules.weapon_in_hand import ShotgunInHand, UziInHand, KnifeInHand
 from modules.weapon_item import WeaponItem
 from modules.tile import Tile
 from modules.enemy import Enemy
+from modules.boss import Boss
 
 
 tile_size = 50
@@ -17,7 +18,7 @@ class Level:
 
     def load_sprites(self, all_sprites, weapons_group, walls_group, tiles_group,
                      enemies_group, dead_enemies_group, bullets_group,
-                     player_group):
+                     player_group, trigger_tile_group):
         for sprite in all_sprites:
             sprite.kill()
         fullname = os.path.join('maps', self.map_name)
@@ -25,19 +26,23 @@ class Level:
             level_map = [line.strip() for line in map_file]
         player = None
         for y in range(len(level_map)):
-            for x in range(len(level_map[0]) - 1):
+            for x in range(len(level_map[0])):
                 cell = level_map[y][x]
                 if cell == '#':
                     Tile('wall', x, y, tiles_group, walls_group, all_sprites)
                 else:
-                    Tile('empty', x, y, tiles_group, all_sprites)
+                    if cell != 'T':
+                        tile = Tile('empty', x, y, tiles_group, all_sprites)
+                    else:
+                        tile = Tile('empty', x, y, tiles_group,
+                                    trigger_tile_group, all_sprites)
                     if cell == '@':
                         player = Player('empty', x, y, player_group,
                                         all_sprites)
                         player.add_inter_groups(walls_group, weapons_group,
                                                 enemies_group, bullets_group,
-                                                all_sprites)
-                    elif cell != '.':
+                                                trigger_tile_group, all_sprites)
+                    elif cell != '.' and cell != 'T':
                         # для клеток с оружием
                         if cell == 'S':
                             weapon = WeaponItem('shotgun', x * tile_size,
@@ -55,21 +60,33 @@ class Level:
         for enemy_data in self.enemies:
             enemy = Enemy(*enemy_data, enemies_group, all_sprites)
             if enemy.weapon.type != 'knife':
-                enemy.weapon.add_inter_groups(bullets_group, player_group,
-                                              all_sprites)
+                enemy.weapon.add_inter_groups(bullets_group, walls_group,
+                                              player_group, all_sprites)
             enemy.add_inter_groups(dead_enemies_group, walls_group,
                          player_group, player, all_sprites)
             enemy.level_map = level_map
         return player
 
 
+class FinalLevel(Level):
+    def __init__(self, map_name, boss_pos):
+        super().__init__(map_name)
+        self.boss_pos = boss_pos[0] * tile_size, boss_pos[1] * tile_size
+        self.enemies = []
+
+    def load_boss(self, boss_group, all_sprites):
+        boss = Boss(*self.boss_pos, boss_group, all_sprites)
+        return boss
+
+
 enemies1 = [(ShotgunInHand(target='player'), [9, 4], (6, 3)),
             (UziInHand(target='player'), [4, 8], (3, 3)),
             (KnifeInHand(), [12, 9], (7, 0))]
-enemies2 = [(ShotgunInHand(target='player'), [12, 5], (4, 1))]
+enemies2 = [(ShotgunInHand(target='player'), [12, 5], (1, 1))]
 level1 = Level('map1.txt', *enemies1)
 level2 = Level('map2.txt', *enemies2)
-level_list = [level1, level2]
+final_level = FinalLevel('final_map.txt', (5, 4))
+level_list = [level1, level2, final_level]
 
 
 

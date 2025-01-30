@@ -2,6 +2,7 @@ from random import randint
 
 import pygame
 import math
+from copy import copy
 
 from modules.load_image import load_image
 from modules.weapon_converter import convert_to_hand, convert_to_item
@@ -34,12 +35,13 @@ class Player(pygame.sprite.Sprite):
         self.is_alive = True
 
     def add_inter_groups(self, walls_group, weapons_group, enemies_group,
-                         bullets_group, all_sprites):
+                         bullets_group, trigger_tile_group, all_sprites):
         self.walls_group = walls_group
         self.weapons_group = weapons_group
         self.enemies_group = enemies_group
         self.bullets_group = bullets_group
         self.all_sprites = all_sprites
+        self.trigger_tile_group = trigger_tile_group
 
     def draw(self, screen):
         hitbox_correction = 3
@@ -87,7 +89,7 @@ class Player(pygame.sprite.Sprite):
         else:
             self.sample_image = self.image = player_images[weapon.type]
         self.turn_to_mouse(pygame.mouse.get_pos())
-        self.weapon = weapon
+        self.weapon = copy(weapon)
 
     def throw_weapon(self):
         if self.weapon != 'empty':
@@ -108,7 +110,8 @@ class Player(pygame.sprite.Sprite):
         weapons = list(filter(lambda wp: not wp.thrown, weapons))
         if weapons != []:
             weapon = convert_to_hand(weapons[0], self.bullets_group,
-                                          self.enemies_group, self.all_sprites)
+                                     self.walls_group, self.enemies_group,
+                                     self.all_sprites)
             self.set_weapon(weapon)
             weapons[0].kill()
 
@@ -121,6 +124,10 @@ class Player(pygame.sprite.Sprite):
         for enemy in self.enemies_group:
             if pygame.sprite.collide_rect(self, enemy):
                 enemy.destroy(is_lethal=True)
+
+    def is_trigger_touched(self):
+        return (pygame.sprite.spritecollideany(self, self.trigger_tile_group)
+                is not None)
 
     def die(self):
         if self.is_alive:

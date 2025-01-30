@@ -2,13 +2,16 @@ from modules.weapon_item import WeaponItem
 from modules.weapon_in_hand import ShotgunInHand, UziInHand, KnifeInHand
 
 
-def convert_to_hand(weapon, bullets_group, targets_group, all_sprites):
+def convert_to_hand(weapon, bullets_group, walls_group, targets_group,
+                    all_sprites):
     if weapon.type == 'shotgun':
         weapon = ShotgunInHand(weapon.ammo)
-        weapon.add_inter_groups(bullets_group, targets_group, all_sprites)
+        weapon.add_inter_groups(bullets_group, walls_group, targets_group,
+                                all_sprites)
     if weapon.type == 'uzi':
         weapon = UziInHand(weapon.ammo)
-        weapon.add_inter_groups(bullets_group, targets_group, all_sprites)
+        weapon.add_inter_groups(bullets_group, walls_group, targets_group,
+                                all_sprites)
     if weapon.type == 'knife':
         weapon = KnifeInHand()
     return weapon
