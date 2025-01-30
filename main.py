@@ -3,8 +3,8 @@ import pygame
 from copy import copy
 
 from modules.camera import Camera
-from modules.level import level_list
 from modules.load_image import load_image
+from modules.level_iterator import LevelIterator
 
 tiles_group = pygame.sprite.Group()
 walls_group = pygame.sprite.Group()
@@ -163,37 +163,6 @@ def draw_all(screen):
         paper_note.show_text(screen, font2)
 
 
-class LevelIterator:
-    def __init__(self):
-        self.lvl_index = -1
-        self.player_weapon = None
-        self.boss = None
-        self.is_last_level = False
-
-    def restart(self):
-        self.lvl_index -= 1
-        return self.__next__()
-
-    def __next__(self, player=None):
-        self.lvl_index += 1
-        if player is not None:
-            self.player_weapon = copy(player.weapon)
-        level = level_list[self.lvl_index]
-        player = level.load_sprites(all_sprites, weapons_group, walls_group,
-                                    tiles_group, enemies_group,
-                                    dead_enemies_group, bullets_group,
-                                    player_group, trigger_tile_group,
-                                    paper_notes_group)
-        if self.player_weapon is not None:
-            player.set_weapon(self.player_weapon)
-        if self.lvl_index == len(level_list) - 1 and self.boss is None:
-            self.boss = level.load_boss(boss_group, all_sprites)
-            self.boss.add_inter_groups(bullets_group, walls_group, player_group,
-                                       all_sprites)
-            self.is_last_level = True
-        return player, self.boss
-
-
 WIDTH, HEIGHT = 900, 600
 if __name__ == '__main__':
     pygame.init()
@@ -206,6 +175,11 @@ if __name__ == '__main__':
     fps = 60
     running = True
     lvl_iterator = LevelIterator()
+    lvl_iterator.add_inter_groups(all_sprites, weapons_group, walls_group,
+                                    tiles_group, enemies_group,
+                                    dead_enemies_group, bullets_group,
+                                    player_group, trigger_tile_group,
+                                    paper_notes_group, boss_group)
     player, boss = lvl_iterator.__next__(player)
     camera = Camera(all_sprites)
 
