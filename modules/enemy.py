@@ -5,6 +5,7 @@ from copy import copy
 from modules.load_image import load_image
 from modules.enemy_movement import EnemyMovement
 from modules.enemy_destroyed import EnemyDestroyed
+from modules.weapon_converter import convert_to_item
 
 tile_size = 50
 enemy_images = {
@@ -52,6 +53,8 @@ class Enemy(pygame.sprite.Sprite, EnemyMovement):
     def destroy(self, is_lethal):
         EnemyDestroyed(self.rect, is_lethal,
                        self.all_sprites, self.dead_enemies)
+        convert_to_item(self.weapon, self.rect,
+                   self.weapons_group, self.all_sprites)
         self.kill()
 
     def draw(self, screen):
