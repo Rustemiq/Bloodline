@@ -1,7 +1,5 @@
 import sys
 import pygame
-from copy import copy
-
 from modules.camera import Camera
 from modules.load_image import load_image
 from modules.level_iterator import LevelIterator
@@ -21,12 +19,6 @@ player = None
 boss = None
 
 
-def weapon_interaction():
-    throwed_weapon = player.weapon_interaction()
-    if throwed_weapon is not None:
-        throwed_weapon.add_inter_groups(walls_group, enemies_group)
-
-
 def shoot():
     if pygame.mouse.get_pressed(3)[0]:
         if player.weapon != 'empty' and player.weapon.type != 'knife':
@@ -39,6 +31,12 @@ def shoot():
 def use_knife():
     if player.weapon != 'empty' and player.weapon.type == 'knife':
         player.use_knife()
+
+
+def use_fists():
+    if pygame.mouse.get_pressed(3)[0]:
+        if player.weapon == 'empty':
+            player.use_fists()
 
 
 def recharge():
@@ -103,7 +101,6 @@ def end_screen():
 
 def end_scene(player, boss):
     boss.is_scene_started = True
-    start_ticks = pygame.time.get_ticks()
     timer = 0
     while True:
         screen.fill('gray')
@@ -120,8 +117,6 @@ def end_scene(player, boss):
             timer = 60
         if timer == 180:
             end_screen()
-        if not player.is_alive:
-            put_to_death_player()
         else:
             shoot()
             recharge()
@@ -144,6 +139,7 @@ def update_all():
     enemies_group.update()
     boss_group.update()
     paper_notes_group.update()
+    player.update()
     camera.update(player)
     camera.apply()
 
@@ -193,7 +189,7 @@ if __name__ == '__main__':
                     player.turn_to_mouse(event.pos)
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 3:
-                        weapon_interaction()
+                        player.weapon_interaction()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
                         if (is_level_cleared() and player.is_alive
@@ -216,6 +212,7 @@ if __name__ == '__main__':
         else:
             shoot()
             use_knife()
+            use_fists()
             recharge()
             player.get_move(pygame.key.get_pressed())
         if player.is_trigger_touched():

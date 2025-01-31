@@ -139,7 +139,8 @@ class EnemyMovement:
     def use_knife(self, player):
         if pygame.sprite.collide_rect(self, player):
             if player.weapon == 'empty' or player.weapon.type != 'knife':
-                player.die()
+                if player.hit_animation.curr_frame == 0:
+                    player.die()
 
     def move(self, state, rect, route_to_player):
         if self.distance <= 0:

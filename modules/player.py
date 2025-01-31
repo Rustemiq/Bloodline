@@ -7,6 +7,7 @@ from copy import copy
 from modules.load_image import load_image
 from modules.weapon_converter import convert_to_hand, convert_to_item
 from modules.rotate_on_pivot import rotate_on_pivot
+from modules.animation import Animation
 
 HEIGHT = 600
 player_images = {
@@ -33,6 +34,8 @@ class Player(pygame.sprite.Sprite):
         self.weapon = weapon
         self.speed = 4
         self.is_alive = True
+        self.hit_animation = Animation('main_char_hit_sheet.png',
+                                       5, 1, 0.34, True)
 
     def add_inter_groups(self, walls_group, weapons_group, enemies_group,
                          bullets_group, trigger_tile_group, all_sprites):
@@ -127,6 +130,10 @@ class Player(pygame.sprite.Sprite):
             if pygame.sprite.collide_rect(self, enemy):
                 enemy.destroy(is_lethal=True)
 
+    def use_fists(self):
+        if self.hit_animation.curr_frame == 0:
+            self.image = self.sample_image = self.hit_animation.animate()
+
     def is_trigger_touched(self):
         return (pygame.sprite.spritecollideany(self, self.trigger_tile_group)
                 is not None)
@@ -141,3 +148,16 @@ class Player(pygame.sprite.Sprite):
             self.image_offset = rotate_on_pivot(dead_player_center,
                                                 90 - self.direction, self.image,
                                                 self.sample_image)
+    def update(self):
+        if self.hit_animation.curr_frame > 0:
+            if (self.weapon == 'empty'
+                    and self.is_alive):
+                self.image = self.sample_image = self.hit_animation.animate()
+                self.turn_to_mouse(pygame.mouse.get_pos())
+            else:
+                self.hit_animation.reset()
+            if self.hit_animation.is_end:
+                self.hit_animation.reset()
+            for enemy in self.enemies_group:
+                if pygame.sprite.collide_rect(self, enemy):
+                    enemy.destroy(False)

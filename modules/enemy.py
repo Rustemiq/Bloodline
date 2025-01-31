@@ -12,7 +12,7 @@ enemy_images = {
     'shotgun': load_image('enemy_shotgun.png'),
     'uzi': load_image('enemy_uzi.png')
 }
-player_hearing_distance = 250
+player_hearing_distance = 400
 
 
 class Enemy(pygame.sprite.Sprite, EnemyMovement):
