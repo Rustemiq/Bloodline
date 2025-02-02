@@ -34,9 +34,9 @@ class Level:
                     Tile('wall', x, y, tiles_group, walls_group, all_sprites)
                 else:
                     if cell != 'T':
-                        tile = Tile('empty', x, y, tiles_group, all_sprites)
+                        Tile('empty', x, y, tiles_group, all_sprites)
                     else:
-                        tile = Tile('empty', x, y, tiles_group,
+                        Tile('empty', x, y, tiles_group,
                                     trigger_tile_group, all_sprites)
                     if cell == '@':
                         player = Player('empty', x, y, player_group,

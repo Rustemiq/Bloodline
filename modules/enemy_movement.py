@@ -15,7 +15,8 @@ rotations = {
     (1, 1): -45,
     (-1, 1): -135,
     (1, -1): 45,
-    (-1, -1): 135
+    (-1, -1): 135,
+    (0, 0): -90,
 }
 
 
@@ -92,14 +93,15 @@ class EnemyMovement:
         left_path = [(-1, 0)] * abs(pattern[0])
         up_path = [(0, -1)] * abs(pattern[1])
         down_path = [(0, 1)] * abs(pattern[1])
-        if pattern[0] > 0 and pattern[0] > 0:
+        if pattern[0] >= 0 and pattern[1] >= 0:
             self.walk_around_path = right_path + down_path + left_path + up_path
-        if pattern[0] < 0 and pattern[0] > 0:
+        if pattern[0] <= 0 and pattern[1] >= 0:
             self.walk_around_path = left_path + down_path + right_path + up_path
-        if pattern[0] > 0 and pattern[0] < 0:
+        if pattern[0] >= 0 and pattern[1] <= 0:
             self.walk_around_path = right_path + up_path + left_path + down_path
-        if pattern[0] < 0 and pattern[0] < 0:
+        if pattern[0] <= 0 and pattern[1] <= 0:
             self.walk_around_path = left_path + up_path + right_path + down_path
+
 
     def rotate(self, direction):
         self.image = pygame.transform.rotate(self.sample_image, direction)
@@ -113,11 +115,15 @@ class EnemyMovement:
         self.distance = tile_size
 
     def walk_around(self):
-        if self.walk_around_iteration == len(self.walk_around_path):
-            self.walk_around_iteration = 0
-        offset = self.walk_around_path[self.walk_around_iteration]
-        self.walk_around_iteration += 1
-        self.go_to_neighbour_tile(offset)
+        if len(self.walk_around_path) > 0:
+            if self.walk_around_iteration == len(self.walk_around_path):
+                self.walk_around_iteration = 0
+            offset = self.walk_around_path[self.walk_around_iteration]
+            self.walk_around_iteration += 1
+            self.go_to_neighbour_tile(offset)
+        else:
+            self.walk_direction = 0, 0
+            self.rotate(rotations[self.walk_direction])
 
     def run_to_player(self, route_to_player):
         if route_to_player == []:
