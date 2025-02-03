@@ -1,7 +1,6 @@
 import os
 
 from modules.player import Player
-from modules.weapon_in_hand import ShotgunInHand, UziInHand, KnifeInHand
 from modules.weapon_item import WeaponItem
 from modules.tile import Tile
 from modules.enemy import Enemy
@@ -20,7 +19,8 @@ class Level:
 
     def load_sprites(self, all_sprites, weapons_group, walls_group, tiles_group,
                      enemies_group, dead_enemies_group, bullets_group,
-                     player_group, trigger_tile_group, paper_notes_group):
+                     player_group, trigger_tile_group,
+                     paper_notes_group, sound):
         for sprite in all_sprites:
             sprite.kill()
         fullname = os.path.join('maps', self.map_name)
@@ -43,7 +43,8 @@ class Level:
                                         all_sprites)
                         player.add_inter_groups(walls_group, weapons_group,
                                                 enemies_group, bullets_group,
-                                                trigger_tile_group, all_sprites)
+                                                trigger_tile_group, all_sprites,
+                                                sound)
                     elif cell != '.' and cell != 'T':
                         # для клеток с оружием
                         if cell == 'S':
@@ -64,9 +65,13 @@ class Level:
                 enemy = Enemy(*enemy_data, enemies_group, all_sprites)
                 if enemy.weapon.type != 'knife':
                     enemy.weapon.add_inter_groups(bullets_group, walls_group,
-                                                  player_group, all_sprites)
+                                                  player_group, sound,
+                                                  all_sprites)
+                else:
+                    enemy.weapon.add_inter_groups(player_group, sound, enemy)
                 enemy.add_inter_groups(dead_enemies_group, walls_group,
-                             player_group, weapons_group, player, all_sprites)
+                                       player_group, weapons_group,
+                                       player, all_sprites, sound)
                 enemy.level_map = level_map
         if self.paper_notes is not None:
             for paper_note_data in self.paper_notes:

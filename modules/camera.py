@@ -1,4 +1,3 @@
-
 WIDTH, HEIGHT = 900, 600
 
 class Camera:

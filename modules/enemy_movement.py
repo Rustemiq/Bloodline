@@ -132,8 +132,7 @@ class EnemyMovement:
         self.run_to_player_iteration += 1
         self.go_to_neighbour_tile(offset)
 
-    def shoot_to_player(self, rect, player_rect, weapon, aiming_timer,
-                        player_group, walls_group):
+    def shoot_to_player(self, rect, player_rect, weapon, aiming_timer, sound):
         x_rel = player_rect.centerx - rect.centerx
         y_rel = player_rect.centery - rect.centery
         self.direction = (180 / math.pi * -math.atan2(y_rel, x_rel))
@@ -142,11 +141,11 @@ class EnemyMovement:
             weapon.shoot(rect.centerx, rect.centery, 90 - self.direction)
             weapon.charge()
 
-    def use_knife(self, player):
-        if pygame.sprite.collide_rect(self, player):
-            if player.weapon == 'empty' or player.weapon.type != 'knife':
-                if player.hit_animation.curr_frame == 0:
-                    player.die()
+    def use_knife(self, player, weapon):
+        if player.weapon == 'empty' or player.weapon.type != 'knife':
+            if player.hit_animation.curr_frame == 0:
+                if player.is_alive:
+                    weapon.use()
 
     def move(self, state, rect, route_to_player):
         if self.distance <= 0:

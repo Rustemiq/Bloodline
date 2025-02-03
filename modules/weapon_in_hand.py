@@ -1,5 +1,7 @@
 import math
+import pygame
 from random import randint
+
 from modules.bullet import Bullet
 
 gun_len = 37
@@ -11,11 +13,12 @@ class WeaponInHand:
         self.recharge = self.charge_level = recharge
         self.target = target
 
-    def add_inter_groups(self, bullets_group, walls_group, targets_group,
+    def add_inter_groups(self, bullets_group, walls_group, targets_group, sound,
                          all_sprites):
         self.bullets_group = bullets_group
         self.targets_group = targets_group
         self.walls_group = walls_group
+        self.sound = sound
         self.all_sprites = all_sprites
 
     def get_gunpoint_coord(self, x, y, direction):
@@ -47,6 +50,7 @@ class ShotgunInHand(WeaponInHand):
                                       self.all_sprites)
                 bullet.add_inter_groups(self.walls_group, self.targets_group)
                 direction += bullet_step
+            self.sound.play_weapon_sound(self)
 
 
 class UziInHand(WeaponInHand):
@@ -63,8 +67,24 @@ class UziInHand(WeaponInHand):
             bullet = Bullet(x, y, direction + randint(-2, 2), self.target,
                                       self.bullets_group, self.all_sprites)
             bullet.add_inter_groups(self.walls_group, self.targets_group)
+            self.sound.play_weapon_sound(self)
 
 
 class KnifeInHand():
-    def __init__(self):
+    def __init__(self, target='enemy'):
         self.type = 'knife'
+        self.target_type = target
+
+    def add_inter_groups(self, targets_group, sound, user):
+        self.targets_group = targets_group
+        self.sound = sound
+        self.user = user
+
+    def use(self):
+        for target in self.targets_group:
+            if pygame.sprite.collide_rect(self.user, target):
+                if self.target_type == 'enemy':
+                    target.destroy(is_lethal=True)
+                else:
+                    target.die()
+                self.sound.play_weapon_sound(self)

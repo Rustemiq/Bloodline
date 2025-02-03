@@ -18,7 +18,7 @@ class LevelIterator:
                                     tiles_group, enemies_group,
                                     dead_enemies_group, bullets_group,
                                     player_group, trigger_tile_group,
-                                    paper_notes_group, boss_group):
+                                    paper_notes_group, boss_group, sound):
         self.all_sprites = all_sprites
         self.weapons_group = weapons_group
         self.walls_group = walls_group
@@ -30,7 +30,7 @@ class LevelIterator:
         self.trigger_tile_group = trigger_tile_group
         self.paper_notes_group = paper_notes_group
         self.boss_group = boss_group
-
+        self.sound = sound
 
     def __next__(self, player=None, *groups):
         self.lvl_index += 1
@@ -42,13 +42,13 @@ class LevelIterator:
                                     self.enemies_group, self.dead_enemies_group,
                                     self.bullets_group, self.player_group,
                                     self.trigger_tile_group,
-                                    self.paper_notes_group)
+                                    self.paper_notes_group, self.sound)
         if self.player_weapon is not None:
             player.set_weapon(self.player_weapon)
         if self.lvl_index == len(level_list) - 1 and self.boss is None:
             self.boss = level.load_boss(self.boss_group, self.all_sprites)
             self.boss.add_inter_groups(self.bullets_group, self.walls_group,
-                                       self.player_group,
+                                       self.player_group, self.sound,
                                        self.all_sprites)
             self.is_last_level = True
         return player, self.boss

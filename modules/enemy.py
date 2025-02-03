@@ -34,13 +34,15 @@ class Enemy(pygame.sprite.Sprite, EnemyMovement):
         self.is_player_alive = True
 
     def add_inter_groups(self, dead_enemies, walls_group,
-                         player_group, weapons_group, player, all_sprites):
+                         player_group, weapons_group,
+                         player, all_sprites, sound):
         self.all_sprites = all_sprites
         self.dead_enemies = dead_enemies
         self.walls_group = walls_group
         self.player_group = player_group
         self.weapons_group = weapons_group
         self.player = player
+        self.sound = sound
 
     def is_player_visible(self):
         for wall in self.walls_group:
@@ -115,12 +117,11 @@ class Enemy(pygame.sprite.Sprite, EnemyMovement):
             self.move(self.state, self.rect, self.route_to_player)
         if self.state == 'shoot' and self.is_player_alive:
             self.shoot_to_player(self.rect, self.player.rect, self.weapon,
-                                 self.aiming_timer, self.player_group,
-                                 self.walls_group)
+                                 self.aiming_timer, self.sound)
             if self.aiming_timer > 0:
                 self.aiming_timer -= 1
         if self.state == 'run_to_player' and self.weapon.type == 'knife':
-            self.use_knife(self.player)
+            self.use_knife(self.player, self.weapon)
         if self.state == 'look_around':
             self.look_around()
             if self.look_around_timer == 0:

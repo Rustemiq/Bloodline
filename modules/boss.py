@@ -16,17 +16,19 @@ class Boss(pygame.sprite.Sprite, Animation):
         self.is_scene_started = False
         self.is_alive = True
 
-    def add_inter_groups(self, bullets_group, walls_group, player_group,
+    def add_inter_groups(self, bullets_group, walls_group, player_group, sound,
                          all_sprites):
         self.bullets_group = bullets_group
         self.walls_group = walls_group
         self.player_group = player_group
+        self.sound = sound
         self.all_sprites = all_sprites
 
     def shoot(self):
         self.weapon = ShotgunInHand(target='player')
         self.weapon.add_inter_groups(self.bullets_group, self.walls_group,
-                                     self.player_group, self.all_sprites)
+                                     self.player_group, self.sound,
+                                     self.all_sprites)
         x = self.rect.x + boss_center[0]
         y = self.rect.y + boss_center[1]
         self.weapon.shoot(x, y, 90)

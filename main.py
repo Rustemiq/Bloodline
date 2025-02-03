@@ -3,6 +3,7 @@ import pygame
 from modules.camera import Camera
 from modules.load_image import load_image
 from modules.level_iterator import LevelIterator
+from modules.sound import Sound
 
 tiles_group = pygame.sprite.Group()
 walls_group = pygame.sprite.Group()
@@ -22,21 +23,21 @@ boss = None
 def shoot():
     if pygame.mouse.get_pressed(3)[0]:
         if player.weapon != 'empty' and player.weapon.type != 'knife':
-            player.weapon.shoot(player.rect.centerx, player.rect.centery,
-                                          player.direction)
-            for enemy in enemies_group:
-                enemy.player_shoots()
+            if player.weapon.ammo > 0:
+                player.weapon.shoot(player.rect.centerx, player.rect.centery,
+                                              player.direction)
+                for enemy in enemies_group:
+                    enemy.player_shoots()
 
 
 def use_knife():
     if player.weapon != 'empty' and player.weapon.type == 'knife':
-        player.use_knife()
+        player.weapon.use()
 
 
 def use_fists():
-    if pygame.mouse.get_pressed(3)[0]:
-        if player.weapon == 'empty':
-            player.use_fists()
+    if player.weapon == 'empty':
+        player.use_fists()
 
 
 def recharge():
@@ -132,7 +133,6 @@ def read_notes(screen):
         if pygame.sprite.collide_rect(player, paper_note):
             paper_note.read(screen)
 
-
 def update_all():
     weapons_group.update()
     bullets_group.update()
@@ -157,6 +157,7 @@ def draw_all(screen):
     draw_information()
     for paper_note in paper_notes_group:
         paper_note.show_text(screen, font2)
+    sound.draw_icons(screen)
 
 
 WIDTH, HEIGHT = 900, 600
@@ -170,29 +171,36 @@ if __name__ == '__main__':
     clock = pygame.time.Clock()
     fps = 60
     running = True
+    sound = Sound(pygame.mixer)
     lvl_iterator = LevelIterator()
     lvl_iterator.add_inter_groups(all_sprites, weapons_group, walls_group,
                                     tiles_group, enemies_group,
                                     dead_enemies_group, bullets_group,
                                     player_group, trigger_tile_group,
-                                    paper_notes_group, boss_group)
+                                    paper_notes_group, boss_group, sound)
     player, boss = lvl_iterator.__next__(player)
     camera = Camera(all_sprites)
-
     while running:
         screen.fill('gray')
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if player.is_alive:
-                if event.type == pygame.MOUSEMOTION:
+            if event.type == pygame.MOUSEMOTION:
+                if player.is_alive:
                     player.turn_to_mouse(event.pos)
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 3:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 3:
+                    if player.is_alive:
                         player.weapon_interaction()
-                if event.type == pygame.KEYDOWN:
+                elif event.button == 1:
+                    sound.interaction(pygame.mouse.get_pos())
+                    if not sound.is_icon_clicked:
+                        if player.is_alive:
+                            use_fists()
+            if event.type == pygame.KEYDOWN:
+                if player.is_alive:
                     if event.key == pygame.K_SPACE:
-                        if (is_level_cleared() and player.is_alive
+                        if (is_level_cleared()
                                 and not lvl_iterator.is_last_level):
                             player, boss = lvl_iterator.__next__(player)
                             #обновим камеру, чтобы игрок повернулся в правильную
@@ -202,22 +210,24 @@ if __name__ == '__main__':
                             player.turn_to_mouse(pygame.mouse.get_pos())
                     if event.key == pygame.K_e:
                         read_notes(screen)
-
-            else:
-                if event.type == pygame.KEYDOWN:
+                else:
                     if event.key == pygame.K_r:
                         player, boss = lvl_iterator.restart()
         if not player.is_alive:
             put_to_death_player()
         else:
-            shoot()
+            if not sound.is_icon_clicked:
+                shoot()
+            if not pygame.mouse.get_pressed(3)[0] and sound.is_icon_clicked:
+                sound.is_icon_clicked = False
             use_knife()
-            use_fists()
             recharge()
             player.get_move(pygame.key.get_pressed())
         if player.is_trigger_touched():
             end_scene(player, boss)
             running = False
+        if lvl_iterator.is_last_level:
+            sound.fade_music()
         update_all()
         draw_all(screen)
         pygame.display.flip()

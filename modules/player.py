@@ -38,13 +38,14 @@ class Player(pygame.sprite.Sprite):
                                        5, 1, 0.34, True)
 
     def add_inter_groups(self, walls_group, weapons_group, enemies_group,
-                         bullets_group, trigger_tile_group, all_sprites):
+                         bullets_group, trigger_tile_group, all_sprites, sound):
         self.walls_group = walls_group
         self.weapons_group = weapons_group
         self.enemies_group = enemies_group
         self.bullets_group = bullets_group
         self.all_sprites = all_sprites
         self.trigger_tile_group = trigger_tile_group
+        self.sound = sound
 
     def draw(self, screen):
         hitbox_correction = 3
@@ -108,6 +109,7 @@ class Player(pygame.sprite.Sprite):
             self.weapon = 'empty'
             self.sample_image = self.image = player_images['empty']
             self.turn_to_mouse(pygame.mouse.get_pos())
+            self.sound.play_throw_sound()
             return throwed_weapon
 
     def grab_weapon(self):
@@ -116,7 +118,7 @@ class Player(pygame.sprite.Sprite):
         if weapons != []:
             weapon = convert_to_hand(weapons[0], self.bullets_group,
                                      self.walls_group, self.enemies_group,
-                                     self.all_sprites)
+                                     self.sound, self, self.all_sprites)
             self.set_weapon(weapon)
             weapons[0].kill()
 
@@ -125,14 +127,10 @@ class Player(pygame.sprite.Sprite):
         self.grab_weapon()
         return throwed_weapon
 
-    def use_knife(self):
-        for enemy in self.enemies_group:
-            if pygame.sprite.collide_rect(self, enemy):
-                enemy.destroy(is_lethal=True)
-
     def use_fists(self):
         if self.hit_animation.curr_frame == 0:
             self.image = self.sample_image = self.hit_animation.animate()
+            self.sound.play_weapon_sound(self.weapon)
 
     def is_trigger_touched(self):
         return (pygame.sprite.spritecollideany(self, self.trigger_tile_group)
