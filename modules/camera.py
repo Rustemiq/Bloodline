@@ -1,5 +1,6 @@
 WIDTH, HEIGHT = 900, 600
 
+
 class Camera:
     def __init__(self, group):
         self.dx = 0

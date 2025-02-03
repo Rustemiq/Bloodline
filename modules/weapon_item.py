@@ -3,15 +3,11 @@ from modules.load_image import load_image
 import math
 
 weapon_images = {
-        'knife': load_image('knife.png'),
-        'shotgun': load_image('shotgun.png'),
-        'uzi': load_image('uzi.png')
+    "knife": load_image("knife.png"),
+    "shotgun": load_image("shotgun.png"),
+    "uzi": load_image("uzi.png"),
 }
-weapon_ammo = {
-        'knife': 0,
-        'shotgun': 4,
-        'uzi': 20
-}
+weapon_ammo = {"knife": 0, "shotgun": 4, "uzi": 20}
 
 
 class WeaponItem(pygame.sprite.Sprite):
@@ -41,9 +37,11 @@ class WeaponItem(pygame.sprite.Sprite):
     def update(self):
         if self.thrown:
             self.rect.x += self.throw_speed * math.sin(
-                self.throw_direction * math.pi / 180)
+                self.throw_direction * math.pi / 180
+            )
             self.rect.y -= self.throw_speed * math.cos(
-                self.throw_direction * math.pi / 180)
+                self.throw_direction * math.pi / 180
+            )
             self.throw_speed -= 1
             for enemy in self.enemies_group:
                 if pygame.sprite.collide_rect(self, enemy):

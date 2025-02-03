@@ -6,7 +6,7 @@ class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, direction, target_type, *groups):
         super().__init__(*groups)
         self.image = pygame.Surface((4, 4))
-        self.image.fill('yellow')
+        self.image.fill("yellow")
         self.rect = pygame.Rect(x, y, 4, 4)
         self.x, self.y = x, y
         self.speed = 15
@@ -24,7 +24,7 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.y = self.y
         for target in self.targets_group:
             if pygame.sprite.collide_rect(self, target):
-                if self.target_type == 'enemies':
+                if self.target_type == "enemies":
                     target.destroy(is_lethal=True)
                 else:
                     target.die()
