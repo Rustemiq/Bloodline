@@ -19,7 +19,7 @@ class PaperNote(pygame.sprite.Sprite):
         self.text = text
         self.is_player_reading = False
 
-    def add_inter_groups(self, player):
+    def add_internal_objects(self, player):
         self.player = player
 
     def read(self, screen):

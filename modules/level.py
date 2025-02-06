@@ -58,7 +58,7 @@ class Level:
                         player = Player(
                             "empty", x, y, player_group, all_sprites
                         )
-                        player.add_inter_groups(
+                        player.add_internal_objects(
                             walls_group,
                             weapons_group,
                             enemies_group,
@@ -93,12 +93,12 @@ class Level:
                                 weapons_group,
                                 all_sprites,
                             )
-                        weapon.add_inter_groups(walls_group, enemies_group)
+                        weapon.add_internal_objects(walls_group, enemies_group)
         if self.enemies is not None:
             for enemy_data in self.enemies:
                 enemy = Enemy(*enemy_data, enemies_group, all_sprites)
                 if enemy.weapon.type != "knife":
-                    enemy.weapon.add_inter_groups(
+                    enemy.weapon.add_internal_objects(
                         bullets_group,
                         walls_group,
                         player_group,
@@ -106,8 +106,8 @@ class Level:
                         all_sprites,
                     )
                 else:
-                    enemy.weapon.add_inter_groups(player_group, sound, enemy)
-                enemy.add_inter_groups(
+                    enemy.weapon.add_internal_objects(player_group, sound, enemy)
+                enemy.add_internal_objects(
                     dead_enemies_group,
                     walls_group,
                     player_group,
@@ -122,7 +122,7 @@ class Level:
                 paper_note = PaperNote(
                     *paper_note_data, paper_notes_group, all_sprites
                 )
-                paper_note.add_inter_groups(player)
+                paper_note.add_internal_objects(player)
         return player
 
 

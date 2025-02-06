@@ -13,7 +13,7 @@ class Bullet(pygame.sprite.Sprite):
         self.direction = direction
         self.target_type = target_type
 
-    def add_inter_groups(self, walls_group, targets_group):
+    def add_internal_objects(self, walls_group, targets_group):
         self.walls_group = walls_group
         self.targets_group = targets_group
 

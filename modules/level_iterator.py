@@ -14,7 +14,7 @@ class LevelIterator:
         self.lvl_index -= 1
         return self.__next__()
 
-    def add_inter_groups(
+    def add_internal_objects(
         self,
         all_sprites,
         weapons_group,

@@ -118,7 +118,7 @@ def end_scene(player, boss):
             timer = 60
         if timer == 180:
             end_screen()
-        else:
+        elif player.is_alive:
             shoot()
             recharge()
         update_all()
@@ -173,7 +173,7 @@ if __name__ == '__main__':
     running = True
     sound = Sound(pygame.mixer)
     lvl_iterator = LevelIterator()
-    lvl_iterator.add_inter_groups(all_sprites, weapons_group, walls_group,
+    lvl_iterator.add_internal_objects(all_sprites, weapons_group, walls_group,
                                     tiles_group, enemies_group,
                                     dead_enemies_group, bullets_group,
                                     player_group, trigger_tile_group,

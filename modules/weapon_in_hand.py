@@ -14,7 +14,7 @@ class WeaponInHand:
         self.recharge = self.charge_level = recharge
         self.target = target
 
-    def add_inter_groups(
+    def add_internal_objects(
         self, bullets_group, walls_group, targets_group, sound, all_sprites
     ):
         self.bullets_group = bullets_group
@@ -55,7 +55,7 @@ class ShotgunInHand(WeaponInHand):
                     self.bullets_group,
                     self.all_sprites,
                 )
-                bullet.add_inter_groups(self.walls_group, self.targets_group)
+                bullet.add_internal_objects(self.walls_group, self.targets_group)
                 direction += bullet_step
             self.sound.play_weapon_sound(self)
 
@@ -79,7 +79,7 @@ class UziInHand(WeaponInHand):
                 self.bullets_group,
                 self.all_sprites,
             )
-            bullet.add_inter_groups(self.walls_group, self.targets_group)
+            bullet.add_internal_objects(self.walls_group, self.targets_group)
             self.sound.play_weapon_sound(self)
 
 
@@ -88,7 +88,7 @@ class KnifeInHand:
         self.type = "knife"
         self.target_type = target
 
-    def add_inter_groups(self, targets_group, sound, user):
+    def add_internal_objects(self, targets_group, sound, user):
         self.targets_group = targets_group
         self.sound = sound
         self.user = user

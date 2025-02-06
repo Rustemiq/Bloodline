@@ -13,17 +13,17 @@ def convert_to_hand(
 ):
     if weapon.type == "shotgun":
         weapon = ShotgunInHand(weapon.ammo)
-        weapon.add_inter_groups(
+        weapon.add_internal_objects(
             bullets_group, walls_group, targets_group, sound, all_sprites
         )
     if weapon.type == "uzi":
         weapon = UziInHand(weapon.ammo)
-        weapon.add_inter_groups(
+        weapon.add_internal_objects(
             bullets_group, walls_group, targets_group, sound, all_sprites
         )
     if weapon.type == "knife":
         weapon = KnifeInHand()
-        weapon.add_inter_groups(targets_group, sound, player)
+        weapon.add_internal_objects(targets_group, sound, player)
     return weapon
 
 

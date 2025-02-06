@@ -21,7 +21,7 @@ class WeaponItem(pygame.sprite.Sprite):
         self.ammo = ammo
         self.thrown = False
 
-    def add_inter_groups(self, walls_group, enemies_group):
+    def add_internal_objects(self, walls_group, enemies_group):
         self.walls_group = walls_group
         self.enemies_group = enemies_group
 

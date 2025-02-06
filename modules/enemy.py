@@ -32,7 +32,7 @@ class Enemy(pygame.sprite.Sprite, EnemyMovement):
         self.is_player_heard = False
         self.is_player_alive = True
 
-    def add_inter_groups(
+    def add_internal_objects(
         self,
         dead_enemies,
         walls_group,

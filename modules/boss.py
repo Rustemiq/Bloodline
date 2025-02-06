@@ -17,7 +17,7 @@ class Boss(pygame.sprite.Sprite, Animation):
         self.is_scene_started = False
         self.is_alive = True
 
-    def add_inter_groups(
+    def add_internal_objects(
         self, bullets_group, walls_group, player_group, sound, all_sprites
     ):
         self.bullets_group = bullets_group
@@ -28,7 +28,7 @@ class Boss(pygame.sprite.Sprite, Animation):
 
     def shoot(self):
         self.weapon = ShotgunInHand(target="player")
-        self.weapon.add_inter_groups(
+        self.weapon.add_internal_objects(
             self.bullets_group,
             self.walls_group,
             self.player_group,

@@ -37,7 +37,7 @@ class Player(pygame.sprite.Sprite):
             "main_char_hit_sheet.png", 5, 1, 0.34, True
         )
 
-    def add_inter_groups(
+    def add_internal_objects(
         self,
         walls_group,
         weapons_group,
@@ -113,7 +113,7 @@ class Player(pygame.sprite.Sprite):
             throwed_weapon = convert_to_item(
                 self.weapon, self.rect, self.weapons_group, self.all_sprites
             )
-            throwed_weapon.add_inter_groups(
+            throwed_weapon.add_internal_objects(
                 self.walls_group, self.enemies_group
             )
             throwed_weapon.throw(self.direction)
