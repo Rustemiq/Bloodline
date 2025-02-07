@@ -30,7 +30,6 @@ class Enemy(pygame.sprite.Sprite, EnemyMovement):
         self.player_last_seen_in = -1, -1
         self.route_to_player = []
         self.is_player_heard = False
-        self.is_player_alive = True
 
     def add_internal_objects(
         self,
@@ -122,13 +121,10 @@ class Enemy(pygame.sprite.Sprite, EnemyMovement):
         if distance <= player_hearing_distance:
             self.is_player_heard = True
 
-    def player_died(self):
-        self.is_player_alive = False
-
     def update(self):
         if self.state == "walk_around" or self.state == "run_to_player":
             self.move(self.state, self.rect, self.route_to_player)
-        if self.state == "shoot" and self.is_player_alive:
+        if self.state == "shoot" and self.player.is_alive:
             self.shoot_to_player(
                 self.rect,
                 self.player.rect,
@@ -147,7 +143,7 @@ class Enemy(pygame.sprite.Sprite, EnemyMovement):
                 self.state = "keep_watch"
         if self.distance <= 0:
             if (
-                self.is_player_alive
+                self.player.is_alive
                 and self.is_player_visible()
                 and self.state != "shoot"
             ):
