@@ -12,7 +12,9 @@ class LevelIterator:
 
     def restart(self):
         self.lvl_index -= 1
-        return self.__next__()
+        self.score = self.score.reset()
+        self.score.register_death()
+        return self.__next__(is_restart=True)
 
     def add_internal_objects(
         self,
@@ -28,6 +30,7 @@ class LevelIterator:
         paper_notes_group,
         boss_group,
         sound,
+        score,
     ):
         self.all_sprites = all_sprites
         self.weapons_group = weapons_group
@@ -41,8 +44,9 @@ class LevelIterator:
         self.paper_notes_group = paper_notes_group
         self.boss_group = boss_group
         self.sound = sound
+        self.score = score
 
-    def __next__(self, player=None, *groups):
+    def __next__(self, player=None, *groups, is_restart=False):
         self.lvl_index += 1
         if player is not None:
             self.player_weapon = copy(player.weapon)
@@ -59,12 +63,15 @@ class LevelIterator:
             self.trigger_tile_group,
             self.paper_notes_group,
             self.sound,
+            self.score,
         )
         if self.player_weapon is not None:
             player.set_weapon(self.player_weapon)
+        if not is_restart and self.lvl_index > 0:
+            self.score.register_time_bonus(self.lvl_index)
         if self.lvl_index == len(level_list) - 1 and self.boss is None:
             self.boss = level.load_boss(self.boss_group, self.all_sprites)
-            self.boss.add_inter_groups(
+            self.boss.add_internal_objects(
                 self.bullets_group,
                 self.walls_group,
                 self.player_group,
@@ -72,4 +79,7 @@ class LevelIterator:
                 self.all_sprites,
             )
             self.is_last_level = True
-        return player, self.boss
+        else:
+            self.score.remember_score()
+            self.score.freeze()
+        return player, self.boss, self.score

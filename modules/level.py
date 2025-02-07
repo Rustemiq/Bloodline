@@ -30,6 +30,7 @@ class Level:
         trigger_tile_group,
         paper_notes_group,
         sound,
+        score,
     ):
         for sprite in all_sprites:
             sprite.kill()
@@ -106,7 +107,9 @@ class Level:
                         all_sprites,
                     )
                 else:
-                    enemy.weapon.add_internal_objects(player_group, sound, enemy)
+                    enemy.weapon.add_internal_objects(
+                        player_group, sound, enemy
+                    )
                 enemy.add_internal_objects(
                     dead_enemies_group,
                     walls_group,
@@ -115,6 +118,7 @@ class Level:
                     player,
                     all_sprites,
                     sound,
+                    score,
                 )
                 enemy.level_map = level_map
         if self.paper_notes is not None:
@@ -135,7 +139,4 @@ class FinalLevel(Level):
     def load_boss(self, boss_group, all_sprites):
         boss = Boss(*self.boss_pos, boss_group, all_sprites)
         return boss
-
-
-
 

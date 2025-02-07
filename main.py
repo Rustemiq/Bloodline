@@ -4,6 +4,7 @@ from modules.camera import Camera
 from modules.load_image import load_image
 from modules.level_iterator import LevelIterator
 from modules.sound import Sound
+from modules.score import Score
 
 tiles_group = pygame.sprite.Group()
 walls_group = pygame.sprite.Group()
@@ -22,26 +23,27 @@ boss = None
 
 def shoot():
     if pygame.mouse.get_pressed(3)[0]:
-        if player.weapon != 'empty' and player.weapon.type != 'knife':
+        if player.weapon != "empty" and player.weapon.type != "knife":
             if player.weapon.ammo > 0:
-                player.weapon.shoot(player.rect.centerx, player.rect.centery,
-                                              player.direction)
+                player.weapon.shoot(
+                    player.rect.centerx, player.rect.centery, player.direction
+                )
                 for enemy in enemies_group:
                     enemy.player_shoots()
 
 
 def use_knife():
-    if player.weapon != 'empty' and player.weapon.type == 'knife':
+    if player.weapon != "empty" and player.weapon.type == "knife":
         player.weapon.use()
 
 
 def use_fists():
-    if player.weapon == 'empty':
+    if player.weapon == "empty":
         player.use_fists()
 
 
 def recharge():
-    if player.weapon != 'empty' and player.weapon.type != 'knife':
+    if player.weapon != "empty" and player.weapon.type != "knife":
         player.weapon.charge()
 
 
@@ -51,25 +53,23 @@ def put_to_death_player():
 
 
 def draw_information():
-    if player.weapon != 'empty' and player.weapon.type != 'knife':
+    if player.weapon != "empty" and player.weapon.type != "knife":
         string = "Ammo: " + str(player.weapon.ammo)
-        text = font1.render(string,
-                           True, (220, 20, 60))
+        text = font1.render(string, True, (220, 20, 60))
         text_y = HEIGHT - text.get_height()
         screen.blit(text, (0, text_y))
     if not lvl_iterator.is_last_level:
         if not player.is_alive:
             string = "PRESS R TO RESTART"
-            text = font1.render(string,
-                               True, (220, 20, 60))
+            text = font1.render(string, True, (220, 20, 60))
             text_y = HEIGHT - text.get_height() - 50
             screen.blit(text, (0, text_y))
         elif is_level_cleared():
             string = "PRESS SPACE TO NEXT LEVEL"
-            text = font2.render(string,
-                               True, (220, 20, 60))
+            text = font2.render(string, True, (220, 20, 60))
             text_y = HEIGHT - text.get_height() - 40
             screen.blit(text, (0, text_y))
+    score.draw_information(screen, font1, font2, font3)
 
 
 def is_level_cleared():
@@ -79,7 +79,7 @@ def is_level_cleared():
 def end_screen():
     alpha = 0
     curr_image = pygame.Surface((WIDTH, HEIGHT))
-    curr_image.fill('black')
+    curr_image.fill("black")
     curr_image.set_alpha(alpha)
     timer = 0
     while True:
@@ -93,9 +93,11 @@ def end_screen():
         else:
             timer += 1
         if timer >= 60:
-            curr_image = load_image('end_screen.png')
+            curr_image = load_image("end_screen.png")
         draw_all(screen)
         screen.blit(curr_image, (0, 0))
+        if timer >= 120:
+            score.draw_final_result(screen, font1)
         pygame.display.flip()
         clock.tick(fps)
 
@@ -104,7 +106,7 @@ def end_scene(player, boss):
     boss.is_scene_started = True
     timer = 0
     while True:
-        screen.fill('gray')
+        screen.fill("gray")
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -133,6 +135,7 @@ def read_notes(screen):
         if pygame.sprite.collide_rect(player, paper_note):
             paper_note.read(screen)
 
+
 def update_all():
     weapons_group.update()
     bullets_group.update()
@@ -140,6 +143,7 @@ def update_all():
     boss_group.update()
     paper_notes_group.update()
     player.update()
+    score.update_combo_counter()
     camera.update(player)
     camera.apply()
 
@@ -161,27 +165,39 @@ def draw_all(screen):
 
 
 WIDTH, HEIGHT = 900, 600
-if __name__ == '__main__':
+if __name__ == "__main__":
     pygame.init()
-    pygame.display.set_caption('Bloodline')
+    pygame.display.set_caption("Bloodline")
     size = WIDTH, HEIGHT
     screen = pygame.display.set_mode(size)
     font1 = pygame.font.Font(None, 50)
     font2 = pygame.font.Font(None, 35)
+    font3 = pygame.font.Font(None, 70)
     clock = pygame.time.Clock()
     fps = 60
     running = True
     sound = Sound(pygame.mixer)
+    score = Score()
     lvl_iterator = LevelIterator()
-    lvl_iterator.add_internal_objects(all_sprites, weapons_group, walls_group,
-                                    tiles_group, enemies_group,
-                                    dead_enemies_group, bullets_group,
-                                    player_group, trigger_tile_group,
-                                    paper_notes_group, boss_group, sound)
-    player, boss = lvl_iterator.__next__(player)
+    lvl_iterator.add_internal_objects(
+        all_sprites,
+        weapons_group,
+        walls_group,
+        tiles_group,
+        enemies_group,
+        dead_enemies_group,
+        bullets_group,
+        player_group,
+        trigger_tile_group,
+        paper_notes_group,
+        boss_group,
+        sound,
+        score,
+    )
+    player, boss, score = lvl_iterator.__next__(player)
     camera = Camera(all_sprites)
     while running:
-        screen.fill('gray')
+        screen.fill("gray")
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -200,11 +216,13 @@ if __name__ == '__main__':
             if event.type == pygame.KEYDOWN:
                 if player.is_alive:
                     if event.key == pygame.K_SPACE:
-                        if (is_level_cleared()
-                                and not lvl_iterator.is_last_level):
-                            player, boss = lvl_iterator.__next__(player)
-                            #обновим камеру, чтобы игрок повернулся в правильную
-                            #сторону
+                        if (
+                            is_level_cleared()
+                            and not lvl_iterator.is_last_level
+                        ):
+                            player, boss, score = lvl_iterator.__next__(player)
+                            # обновим камеру, чтобы игрок повернулся в правильную
+                            # сторону
                             camera.update(player)
                             camera.apply()
                             player.turn_to_mouse(pygame.mouse.get_pos())
@@ -212,7 +230,7 @@ if __name__ == '__main__':
                         read_notes(screen)
                 else:
                     if event.key == pygame.K_r:
-                        player, boss = lvl_iterator.restart()
+                        player, boss, score = lvl_iterator.restart()
         if not player.is_alive:
             put_to_death_player()
         else:

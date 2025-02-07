@@ -41,6 +41,7 @@ class Enemy(pygame.sprite.Sprite, EnemyMovement):
         player,
         all_sprites,
         sound,
+        score,
     ):
         self.all_sprites = all_sprites
         self.dead_enemies = dead_enemies
@@ -49,6 +50,7 @@ class Enemy(pygame.sprite.Sprite, EnemyMovement):
         self.weapons_group = weapons_group
         self.player = player
         self.sound = sound
+        self.score = score
 
     def is_player_visible(self):
         for wall in self.walls_group:
@@ -68,6 +70,7 @@ class Enemy(pygame.sprite.Sprite, EnemyMovement):
         convert_to_item(
             self.weapon, self.rect, self.weapons_group, self.all_sprites
         )
+        self.score.register_kill()
         self.kill()
 
     def draw(self, screen):
